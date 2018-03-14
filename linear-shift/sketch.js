@@ -11,13 +11,15 @@ let playing = false;
 
 let data, scale, areas, ratios;
 let mult = 1;
-let numOctaves = 2;
+let numOctaves = 10;
 let ow = 100;
-let stepSize = 0.000001;
-let base = 110;
+let stepSize = 0.00001;
+let base = 27.5;
 
 let keyboard = [];
 let balls = [];
+
+let lifespan = 300;
 
 function preload() {
   data = loadJSON('scales.json');
@@ -66,9 +68,10 @@ function draw() {
     }
   }
 
-  for (let b = 0; b < balls.length; b++) {
+  for (let b = balls.length-1; b >= 0; b--) {
     let ball = balls[b];
     ball.run();
+    if(ball.died()) balls.splice(b, 1);
   }
 }
 
@@ -89,7 +92,6 @@ function updateRelativeNotes(t, tn) {
 }
 
 function calcRatios() {
-
   // Calculate scale of areas based on total height of window
   let sum = 0;
   for (let s = 0; s < scale.length; s++) {
@@ -104,7 +106,7 @@ function calcRatios() {
     let y = height;
     for (let s = 0; s < scale.length; s++) {
       let ratio = ratios[s].n / ratios[s].d;
-      let freq = base * ratio * (o + 1);
+      let freq = base * ratio * pow(2, o);
       let h = areas[s];
       y -= h * mult;
       keyboard[o].push(new Note(freq, x, y, ow, h));

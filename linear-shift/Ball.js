@@ -8,12 +8,17 @@ class Ball {
     this.yspeed = yspeed;
     this.tx = random(50, 150);
     this.ty = random(500, 600);
+    this.counter = 0;
   }
 
   run() {
     if(noise(this.tx) < 0.9) this.noise();
     this.update();
     this.display();
+  }
+
+  died() {
+    return this.counter > lifespan;
   }
 
   //Update function
@@ -24,6 +29,7 @@ class Ball {
     this.yspeed = bounce(this.y, this.yspeed, 0, height);
     this.tx += 0.01;
     this.ty += 0.01;
+    this.counter++;
   }
 
   noise() {
@@ -34,8 +40,8 @@ class Ball {
 
   // Display function
   display() {
-    fill(255, 0, 0);
-    noStroke
+    fill(255, 0, 0, this.counter);
+    noStroke();
     ellipse(this.x, this.y, this.w, this.h);
   }
 }
