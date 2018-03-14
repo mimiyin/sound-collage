@@ -8,40 +8,61 @@
 // User's movement sets off horrific screech
 
 let playing = false;
-let numNotes = 0;
-let notes = [];
-let scl = 1;
-let data = [];
 
+let data, scale, areas, ratios;
+let mult = 1;
+let numOctaves = 2;
+let ow = 100;
+let stepSize = 0.000001;
+let base = 110;
+
+let keyboard = [];
 let balls = [];
 
 function preload() {
-  data = loadStrings('notes.csv');
-}
-
-function addBalls(num) {
-  for (let i = 0; i < num; i++) {
-    balls.push(new Ball(width / 2, height/2, 20, 20, 0, random(-5, 5)));
-  }
+  data = loadJSON('scales.json');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   frameRate(30);
-  calcRatios();
-  balls.push(new Ball(width / 2, height/2, 20, 20, 0, random(-5, 5)));
+  scale = data.scales.chromatic;
+  areas = data.areas;
+  ratios = data.ratios;
 
-  setInterval(function () {
-    if(random(1) < 0.01) addBalls(random(2));
-  }, 1000);
+  ow = width/numOctaves;
+  calcRatios();
 }
 
 function draw() {
   background(255);
 
-  for (var n = 0; n < notes.length; n++) {
-    for (var m = 0; m < numNotes; m++) {
-      notes[n][m].run(balls);
+  for (let o = 0; o < keyboard.length; o++) {
+    let octave = keyboard[o];
+    for (let n = 0; n < octave.length; n++) {
+      let note = keyboard[o][n];
+      note.run(balls);
+      updateRelativeNotes(n, note);
+    }
+  }
+
+  // Update multiplier
+  let sum = 0;
+  let octave = keyboard[0];
+  for (let n = 0; n < octave.length; n++) {
+    let note = octave[n];
+    sum += note._rh;
+  }
+  mult = height / sum;
+
+  // Update keyboard
+  for (let o = 0; o < keyboard.length; o++) {
+    let octave = keyboard[o];
+    let y = height;
+    for (let n = 0; n < octave.length; n++) {
+      let note = keyboard[o][n];
+      y -= note._rh * mult;
+      note.update(y);
     }
   }
 
@@ -51,118 +72,53 @@ function draw() {
   }
 }
 
-function recalcRatios() {
-  var baseIndex = 3;
-  var base;
+// Paramaters are tonic index and tonic note.
+function updateRelativeNotes(t, tn) {
+  if (tn.counter <= 0) return;
+  // Iterate through ALL the keyboard again for each note.
+  for (let o = 0; o < keyboard.length; o++) {
+    let octave = keyboard[o];
+    for (let n = 0; n < octave.length; n++) {
+      let note = keyboard[o][n];
+      // Calculate the relative note
+      let rn = n >= t ? n - t : (n + (octave.length - 1)) - t;
+      let h = (areas[rn] - note.h);
+      note.modulate(areas[rn], tn.counter * stepSize);
+    }
+  }
+}
 
-  data.reverse();
-  base = data[baseIndex] * pow(2, 2);
+function calcRatios() {
 
-  // Ratios of the Western scales
-  var sel = {
-    3: 2,
-    5: .34,
-    7: 1,
-    8: .67,
-    10: 1.5,
-    12: .5,
-    14: .25,
-    15: 2
-  };
-
+  // Calculate scale of areas based on total height of window
   let sum = 0;
-  for (var s in sel) {
-    sum += sel[s];
-  }
-  scl = height / sum;
-
-  let ratios = {};
-  for (var s in sel) {
-    var r = data[s] / data[baseIndex];
-    ratios[s] = r;
-    numNotes++;
+  for (let s = 0; s < scale.length; s++) {
+    sum += areas[s];
   }
 
-  let ow = 100;
-  let x = width / 2 - ow / 2;
-  let numOctaves = 1;
-  let mults = [][];
-  for (var n = 0; n < notes.length; n++) {
-    for (var m = 0; m < numNotes; m++) {
-      mults[n][m] = notes[n][m].counter/60000;
-    }
-  }
-  for (var n = 0; n < notes.length; n++) {
-    for (var m = 0; m < numNotes; m++) {
-      let mult = notes[n][m].counter/60000;
-      var diff = sel[s]; //ratio-pratio;
-      var h = diff * scl;
-      y -= h;
-      notes[n][m].update(y, h)
-    }
-  }
+  mult = height / sum;
 
-  for (var o = 0; o < numOctaves; o++) {
-    notes[o] = [];
-    var y = height;
-    for (var s in sel) {
-      var ratio = ratios[s];
-      var freq = base * pow(2, 3) * ratio;
-      var diff = sel[s]; //ratio-pratio;
-      var h = diff * scl;
-      y -= h;
-      notes[o].push(new Note(freq, x, y, ow, h));
+  let x = 0;
+  for (let o = 0; o < numOctaves; o++) {
+    keyboard[o] = [];
+    let y = height;
+    for (let s = 0; s < scale.length; s++) {
+      let ratio = ratios[s].n / ratios[s].d;
+      let freq = base * ratio * (o + 1);
+      let h = areas[s];
+      y -= h * mult;
+      keyboard[o].push(new Note(freq, x, y, ow, h));
     }
     x += ow;
   }
 }
 
-function calcRatios() {
-  var baseIndex = 3;
-  var base;
+function mousePressed() {
+  addBalls(1, mouseX, mouseY);
+}
 
-  data.reverse();
-  base = data[baseIndex] * pow(2, 2);
-
-  // Ratios of the Western scales
-  var sel = {
-    3: 2,
-    5: .34,
-    7: 1,
-    8: .67,
-    10: 1.5,
-    12: .5,
-    14: .25,
-    15: 2
-  };
-
-  let sum = 0;
-  for (var s in sel) {
-    sum += sel[s];
-  }
-  scl = height / sum;
-
-  let ratios = {};
-  for (var s in sel) {
-    var r = data[s] / data[baseIndex];
-    ratios[s] = r;
-    numNotes++;
-  }
-
-  let ow = 100;
-  let x = width / 2 - ow / 2;
-  let numOctaves = 1;
-  for (var o = 0; o < numOctaves; o++) {
-    notes[o] = [];
-    var y = height;
-    for (var s in sel) {
-      var ratio = ratios[s];
-      var freq = base * pow(2, 3) * ratio;
-      var diff = sel[s]; //ratio-pratio;
-      var h = diff * scl;
-      y -= h;
-      notes[o].push(new Note(freq, x, y, ow, h));
-    }
-    x += ow;
+function addBalls(num, x, y) {
+  for (let i = 0; i < num; i++) {
+    balls.push(new Ball(x, y, 20, 20, 0, random(-5, 5)));
   }
 }

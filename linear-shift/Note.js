@@ -13,13 +13,22 @@ class Note {
     this.x = _x;
     this.y = _y;
     this.w = _w;
-    this.h = _h;
+    this.rh = _h;
+    this.h = this.rh*mult;
+    this._rh = this.rh;
 
   }
+
+  // Destination height and weight
+  modulate(d, w) {
+    let step = (d - this.rh) * w;
+    this._rh += step;
+  }
   // Update the position and height of note
-  update(y, h) {
-    this.y = _y;
-    this.h = _h;
+  update(y) {
+    this.y = y;
+    this.rh = this._rh;
+    this.h = this.rh*mult;
   }
 
   show() {
@@ -30,13 +39,12 @@ class Note {
 
   play() {
     this.counter++;
-    this.note.amp(this.counter / scl);
-
+    this.note.amp(this.counter / mult);
   }
 
   pause() {
     if (this.counter > 0) this.counter--;
-    this.note.amp(this.counter / scl);
+    this.note.amp(this.counter / mult);
   }
 
   contains(loc) {
