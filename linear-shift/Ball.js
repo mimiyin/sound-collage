@@ -1,11 +1,12 @@
 class Ball {
-  constructor(x, y, w, h, xspeed, yspeed) {
+  constructor(x, y, w, h, xspeed, yspeed, lifespan) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
     this.xspeed = xspeed;
     this.yspeed = yspeed;
+    this.lifespan = lifespan;
     this.tx = random(50, 150);
     this.ty = random(500, 600);
     this.counter = 0;
@@ -18,7 +19,7 @@ class Ball {
   }
 
   died() {
-    return this.counter > lifespan;
+    return this.counter > this.lifespan;
   }
 
   //Update function
@@ -40,7 +41,7 @@ class Ball {
 
   // Display function
   display() {
-    fill(255, 0, 0, this.counter);
+    fill(100, 100, 100, this.counter);
     noStroke();
     ellipse(this.x, this.y, this.w, this.h);
   }
