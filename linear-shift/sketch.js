@@ -9,7 +9,7 @@
 
 let playing = false;
 
-let data, scale, areas, ratios;
+let scales, scale, areas, ratios;
 let mult = 1;
 let TOTAL_OCTAVES = 5;
 let BASE = 110;
@@ -23,32 +23,57 @@ let balls = [];
 let speed = 0;
 let diag = 0;
 
+let recording = false;
 let replay = false;
-let record = false;
+
+let record;
 let rpdata;
 let rp = 0;
+let recordJSON = {
+  setup: {
+    w: undefined,
+    h: undefined,
+    fr: undefined
+  },
+  data: [],
+};
 
 let bgsound;
 let timer;
 
-let PLAYTIME = 3*60*1000;
+let PLAYTIME = 3 * 60 * 1000;
+let WHINETIME = 5000;
 
 let whine;
 
 function preload() {
-  bgsound = loadSound('bgsound.mp3');
-  data = loadJSON('scales.json');
-  rpdata = loadJSON('replay3.json');
+  bgsound = loadSound('bgsound-short.mp3');
+  scales = loadJSON('scales.json');
+  record = loadJSON('record.json');
 }
 
 function setup() {
-  bgsound.play();
-  bgsound.setVolume(0.1);
-  createCanvas(567, 516);
-  frameRate(30);
-  scale = data.scales.chromatic;
-  areas = data.areas;
-  ratios = data.ratios;
+  if (recording) {
+    createCanvas(567, 516);
+    frameRate(25);
+    // Record setup
+    recordJSON.setup.w = width;
+    recordJSON.setup.h = height;
+    recordJSON.setup.fr = frameRate();
+  }
+  else {
+    let setup = record.setup;
+    createCanvas(setup.w, setup.w);
+    frameRate(setup.fr);
+  }
+
+
+  scale = scales.scales.chromatic;
+  areas = scales.areas;
+  ratios = scales.ratios;
+
+  rpdata = record.data;
+
   diag = sqrt(sq(width) + sq(height));
 
   reset();
@@ -59,15 +84,21 @@ function setup() {
 
   colorMode(HSB, 100);
 
+  // Set up timer
   timer = createP();
   timer.attribute('id', 'timer');
 
+  // Set up background sound
+  bgsound.loop();
+  bgsound.setVolume(0.1);
+
+  // Set up whine
   whine = new p5.Oscillator();
   whine.setType('sine');
-  whine.freq(BASE*pow(2, 6));
+  whine.freq(BASE * pow(2, 6));
   whine.amp(0);
   whine.start();
-  whine.amp(0.1, PLAYTIME/1000);
+  whine.amp(0.005, PLAYTIME / 1000);
 }
 
 function reset() {
@@ -77,26 +108,37 @@ function reset() {
 function draw() {
   background(0);
 
-  // Print the time elapsed
-  let s = nfs(millis()/1000, 2, 0);
-  let minute = floor(s/60);
-  let seconds = s%60;
-  timer.html(minute + ":" + seconds);
+  // Display the time elapsed in mm:ss;
+  let seconds = millis() / 1000;
+  let minute = floor(seconds / 60);
+  seconds = seconds % 60;
+  timer.html(nfs(minute, 2, 0) + ":" + nfs(int(seconds), 2, 0));
 
   // Turn off background sound
-  if(millis() > PLAYTIME && !replay && !record) {
-    bgsound.pause();
-    replay = true;
-  }
-  else if(millis() > PLAYTIME + 3000) {
-    whine.amp(0);
-    whine.stop();
-  }
-
-  if (replay && rpdata[rp]) {
-    if (millis() > rpdata[rp].m + PLAYTIME + 3000) {
-      addBalls(rpdata[rp].num);
-      rp++;
+  if (!recording) {
+    if (replay) {
+      //console.log("REPLAY!");
+      if (millis() > rpdata[rp].m + PLAYTIME) {
+        addBalls(rpdata[rp].num);
+        rp++;
+        if (rp >= rpdata.length-1) replay = false;
+      }
+    }
+    else {
+      //console.log("BOOKENDS");
+      if (millis() > 10*60*1000 && rp >= rpdata.length-1 && !bgsound.isPlaying()) {
+        bgsound.loop();
+        // Fade it in over 5 seconds, after 10 seconds
+        bgsound.setVolume(.25, 5, 10);
+      }
+      else if (rp < 1 && millis() > PLAYTIME + WHINETIME) {
+        whine.amp(0);
+        whine.stop();
+        replay = true;
+      }
+      else if (rp < 1 && millis() > PLAYTIME) {
+        bgsound.pause();
+      }
     }
   }
 
@@ -187,7 +229,7 @@ function calcRatios() {
 
 function mouseMoved() {
   // Don't create new balls if replaying
-  if (replay || !record) return;
+  if (replay || !recording) return;
   speed += dist(pmouseX, pmouseY, mouseX, mouseY) / diag;
   if (speed > 1) {
     addBalls(speed);
@@ -195,9 +237,8 @@ function mouseMoved() {
   }
 }
 
-let json = [];
 function addBalls(num) {
-  if (!replay) json.push({
+  if (recording) recordJSON.data.push({
     m: millis(),
     num: num
   });
@@ -207,5 +248,5 @@ function addBalls(num) {
 }
 
 function mousePressed() {
-  saveJSON(json, "replay.json");
+  saveJSON(recordJSON, "record.json");
 }
