@@ -41,7 +41,7 @@ let recordJSON = {
 let bgsound;
 let timer;
 
-let PLAYTIME = 3 * 60 * 1000;
+let PLAYTIME = 4 * 60 * 1000;
 let WHINETIME = 5000;
 
 let whine;
@@ -90,7 +90,7 @@ function setup() {
 
   // Set up background sound
   bgsound.loop();
-  bgsound.setVolume(0.1);
+  bgsound.setVolume(2);
 
   // Set up whine
   whine = new p5.Oscillator();
@@ -126,10 +126,10 @@ function draw() {
     }
     else {
       //console.log("BOOKENDS");
-      if (millis() > 10*60*1000 && rp >= rpdata.length-1 && !bgsound.isPlaying()) {
+      if (millis() > 11*60*1000 && rp >= rpdata.length-1 && !bgsound.isPlaying()) {
         bgsound.loop();
         // Fade it in over 5 seconds, after 10 seconds
-        bgsound.setVolume(.25, 5, 10);
+        bgsound.setVolume(1, 5, 10);
       }
       else if (rp < 1 && millis() > PLAYTIME + WHINETIME) {
         whine.amp(0);
