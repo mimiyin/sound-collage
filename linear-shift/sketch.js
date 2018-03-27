@@ -23,7 +23,7 @@ let balls = [];
 let speed = 0;
 let diag = 0;
 
-let recording = false;
+let recording = true;
 let replay = false;
 
 let record;
@@ -54,7 +54,7 @@ function preload() {
 
 function setup() {
   if (recording) {
-    createCanvas(567, 516);
+    createCanvas(windowWidth, windowHeight);
     frameRate(25);
     // Record setup
     recordJSON.setup.w = width;
@@ -90,7 +90,7 @@ function setup() {
 
   // Set up background sound
   bgsound.loop();
-  bgsound.setVolume(2);
+  bgsound.setVolume(.5);
 
   // Set up whine
   whine = new p5.Oscillator();
@@ -140,6 +140,9 @@ function draw() {
         bgsound.pause();
       }
     }
+  }
+  else {
+    bgsound.pause();
   }
 
   // // Change the range with a noisy walker
@@ -229,7 +232,7 @@ function calcRatios() {
 
 function mouseMoved() {
   // Don't create new balls if replaying
-  if (replay || !recording) return;
+  if (replay || !recording || !pmouseX) return;
   speed += dist(pmouseX, pmouseY, mouseX, mouseY) / diag;
   if (speed > 1) {
     addBalls(speed);
