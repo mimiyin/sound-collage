@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+<meta charset="utf-8">
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// define the sample size
+var block_size = randomInt(20, 80);
+
+function draw(){
+
+  if(chance(200)) block_size = randomInt(10, 40);
+  // loop through the rows from to to bottom of page
+  for (var y= 0; y < h; y+= block_size) {
+
+    // loop through all the columns from left to right
+    for (var x = 0; x < w; x+= block_size) {
+      ctx.fillStyle = rgb(random(205));
+      ctx.fillRect(x, y, block_size, block_size);
+    }
+
+  }
+}
+
+
+
+</script>
+
+</body>
+
+</html>

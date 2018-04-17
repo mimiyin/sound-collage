@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+<meta charset="utf-8">
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+var colours = new colourPool()
+	    .add("#FFFFFF", 0.9)
+	    .add("#DDDDDD", 0.9)
+	    .add("#0095A8", 0.6)
+	    .add("#00616F", 0.6)
+	    .add("#333333", 0.6)
+	    .add("#FF3300")
+	    .add("#FF6600");
+
+
+
+// create particles
+var balls = [];
+var number_of_balls = 100;
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(w/2, random(h));
+}
+
+function addBall(_x, _y){
+  var ball = {
+    x: _x,
+    y: _y,
+    speed_x: random(-5,5),
+    speed_y: random(-5,5),
+    sz: random(10,80),
+    colour: colours.get()
+  }
+  balls.push(ball);
+}
+
+
+function draw(){
+  ctx.background(235);
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    moveBall(b);
+    drawBall(b);
+  }
+}
+
+
+function moveBall(b){
+
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+
+    if(b.x > w - b.sz/2 || b.x < b.sz/2){
+      b.speed_x *= -0.9;
+    }
+    if(b.y > h - b.sz/2 || b.y < b.sz/2) {
+      b.speed_y *= -1;
+    }
+
+}
+
+
+function drawBall(b){
+    ctx.fillStyle = b.colour;
+    ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
+}
+
+
+
+</script>
+
+</body>
+
+</html>

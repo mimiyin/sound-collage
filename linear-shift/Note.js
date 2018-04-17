@@ -32,7 +32,7 @@ class Note {
   }
 
   show() {
-    stroke(0, 0, 100, 10);
+    stroke(0, 0, 100, 50);
     fill(100, this.counter, this.counter);
     rect(this.x, this.y, ow, this.h);
   }

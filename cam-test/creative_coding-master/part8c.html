@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+  <meta charset="utf-8">
+  <script language="javascript" src="js/creative_coding.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var number_of_balls = 5;
+var balls = [];
+var radius = 200;
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i);
+}
+
+
+function addBall(_i){
+  var ball = {
+    x: 0,
+    y: 0,
+    speed: 0.2,
+    size: random(20, 80),
+    colour: rgb(0),
+    angle: distributeAngles(_i, number_of_balls)
+  }
+  balls.push(ball);
+}
+
+function draw(){
+  ctx.background(245, 1);
+  ctx.fillStyle = "black";
+  ctx.HfillEllipse(w/2, h/2, radius*2);
+  moveBall();
+  drawBall();
+}
+
+
+function moveBall(){
+
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    // move the angle to rotate the balls
+    b.angle += b.speed;
+    b.x = w/2 + Math.cos(radians(b.angle))*(radius+b.size/2);
+    b.y = h/2 + Math.sin(radians(b.angle))*(radius+b.size/2);
+  }
+
+}
+
+
+function drawBall(){
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    ctx.fillStyle = b.colour;
+    ctx.fillEllipse(b.x, b.y, b.size);
+  }
+}
+
+
+function distributeAngles(me, total) {
+    return me/total * 360;
+}
+
+
+
+</script>
+
+</body>
+
+</html>

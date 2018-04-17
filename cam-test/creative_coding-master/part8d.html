@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+  <meta charset="utf-8">
+
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// create two particle arrays
+var inners = {
+  count: 3,
+  radius: 220,
+  speed: random(2)/100,
+  particles: []
+};
+
+var outers = {
+  count: 3,
+  radius: 100,
+  speed: random(-2)/100,
+  particles: []
+};
+
+for (var i = 0; i < outers.count; i++) {
+  addParticle(i, outers);
+}
+
+for (var i = 0; i < inners.count; i++) {
+  addParticle(i, inners);
+}
+
+
+// pass in the object
+function addParticle(_i, _object){
+
+  var _angle = radians(distributeAngles(i, _object.count));
+
+  var particle = {
+    x: 0,
+    y: 0,
+    speed: _object.speed,
+    angle: _angle,
+    radius: _object.radius
+  }
+
+  _object.particles.push(particle);
+
+}
+
+function draw() {
+
+  ctx.background(0);
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 4;
+  drawLines();
+
+}
+
+
+function drawLines(){
+
+  for (var i=0; i< outers.count; i++) {
+
+    var outer = outers.particles[i];
+    outer.angle += outer.speed;
+    outer.x = w/2 + Math.cos(outer.angle) * outer.radius;
+    outer.y = h/2 + Math.sin(outer.angle) * outer.radius;
+
+    for (var j=0; j< inners.count; j++) {
+      var inner = inners.particles[j];
+      inner.angle += inner.speed;
+      inner.x = w/2 + Math.cos(inner.angle) * inner.radius;
+      inner.y = h/2 + Math.sin(inner.angle) * inner.radius;
+      ctx.line(inner.x, inner.y, outer.x, outer.y);
+    }
+
+
+  }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>
