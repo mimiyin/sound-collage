@@ -23,7 +23,11 @@ let balls = [];
 let speed = 0;
 let diag = 0;
 
-let recording = true;
+// Recording data?
+let recording = false;
+// Performing?
+let perform = false;
+// Replaying recorded data?
 let replay = false;
 
 let record;
@@ -39,12 +43,19 @@ let recordJSON = {
 };
 
 let bgsound;
-let timer;
-
-let PLAYTIME = 4 * 60 * 1000;
-let WHINETIME = 5000;
-
 let whine;
+
+let FR = 25;
+let PLAYTIME = 4 * FR * 1000;
+let WHINETIME = 5000;
+let BUFFER = perform ? PLAYTIME + WHINETIME : 0;
+let MAX_END_TIME = 15 * FR * 1000;
+
+// Where to start?
+let part = 1;
+
+// Keeping track of time elapsed
+let timer;
 
 // Get data from camera
 let webcam;
@@ -55,35 +66,37 @@ let ramp = 0;
 let CAM_SCALE = 40;
 let CAM_TH = 50;
 
+let m_th = 1;
 
 
 function preload() {
   bgsound = loadSound('bgsound-short.mp3');
   scales = loadJSON('scales.json');
-  record = loadJSON('record.json');
+  if (replay) record = loadJSON('record.json');
 }
 
 function setup() {
-  if (recording) {
-    createCanvas(windowWidth, windowHeight);
-    frameRate(25);
-    // Record setup
-    recordJSON.setup.w = width;
-    recordJSON.setup.h = height;
-    recordJSON.setup.fr = frameRate();
-  }
-  else {
+  if (replay) {
     let setup = record.setup;
     createCanvas(setup.w, setup.w);
     frameRate(setup.fr);
+    rpdata = record.data;
+  }
+  else {
+    createCanvas(windowWidth, windowHeight);
+    if (recording) {
+      frameRate(FR);
+      // Record setup
+      recordJSON.setup.w = width;
+      recordJSON.setup.h = height;
+      recordJSON.setup.fr = FR;
+    }
   }
 
 
   scale = scales.scales.chromatic;
   areas = scales.areas;
   ratios = scales.ratios;
-
-  rpdata = record.data;
 
   diag = sqrt(sq(width) + sq(height));
 
@@ -99,31 +112,31 @@ function setup() {
   timer = createP();
   timer.attribute('id', 'timer');
 
-  // Set up background sound
-  bgsound.loop();
-  bgsound.setVolume(.5);
+  if (perform) {
+    // Set up background sound
+    bgsound.loop();
+    bgsound.setVolume(2, PLAYTIME);
 
-  // Set up whine
-  whine = new p5.Oscillator();
-  whine.setType('sine');
-  whine.freq(BASE * pow(2, 6));
-  whine.amp(0);
-  whine.start();
-  whine.amp(0.005, PLAYTIME / 1000);
+    // Set up whine
+    whine = new p5.Oscillator();
+    whine.setType('sine');
+    whine.freq(BASE * pow(2, 6));
+    whine.amp(0);
+    whine.start();
+    whine.amp(0.005, PLAYTIME / 1000);
+  }
 
-  // Set up video
-  //webcam = createCapture(VIDEO);
-  // Define and create an instance of kinectron
-  //kinectron = new Kinectron("172.16.231.112");
-  kinectron = new Kinectron("192.168.0.117");
-
-  // Connect with application over peer
-  kinectron.makeConnection();
-
-  // Request all tracked bodies and pass data to your callback
-  kinectron.startInfrared( function(el) {
-    loadImage(el.src, processCamera);
-  });
+  // // Define and create an instance of kinectron
+  // kinectron = new Kinectron("172.20.10.4");
+  // //kinectron = new Kinectron("192.168.0.117");
+  //
+  // // Connect with application over peer
+  // kinectron.makeConnection();
+  //
+  // // Request all tracked bodies and pass data to your callback
+  // kinectron.startInfrared( function(el) {
+  //   loadImage(el.src, processCamera);
+  // });
 }
 
 function reset() {
@@ -135,11 +148,8 @@ function reset() {
 function draw() {
   background(0);
 
-  // Use webcam
-  //processCamera(webcam);
-
-  // time();
-  // updateRange();
+  time();
+  updateRange();
 
   for (let o = 0; o < keyboard.length; o++) {
     let octave = keyboard[o];
@@ -220,9 +230,10 @@ function calcRatios() {
 function updateRange() {
   // Change the range with a noisy walker
   let pNumOctaves = numOctaves;
-  numOctaves += (noise(frameCount * 0.01) - 0.5)*2;
-  if (frameCount % 60 == 0) {
-    console.log(frameRate(), numOctaves);
+  let t = frameCount * 0.001;
+  numOctaves = sin((noise(t)*t))*5;
+  if (frameCount % FR == 0) {
+    console.log("num octaves: " + nfs(numOctaves, 0, 2));
   }
   numOctaves = round(numOctaves);
   numOctaves = constrain(numOctaves, 1, TOTAL_OCTAVES);
@@ -241,7 +252,7 @@ function addBalls(num) {
 
 function mouseMoved() {
   // Don't create new balls if replaying
-  if (replay || !recording || !pmouseX) return;
+  if (replay || part != 1 || !pmouseX) return;
   speed += dist(pmouseX, pmouseY, mouseX, mouseY) / diag;
   if (speed > 1) {
     addBalls(speed);
@@ -249,30 +260,52 @@ function mouseMoved() {
   }
 }
 
-function mousePressed() {
-  saveJSON(recordJSON, "record.json");
+// Press a key to save the data
+function keyPressed() {
+  switch (key) {
+    case 's':
+      saveJSON(recordJSON, "record.json");
+      break;
+    case '32':
+      part = 2;
+      break;
+  }
+
+  // Change motion threshold for creating notes
+  switch (keyCode) {
+    case RIGHT_ARROW:
+      m_th += 0.1;
+      break;
+    case LEFT_ARROW:
+      m_th -= 0.1;
+      break;
+  }
 }
 
 function processCamera(img) {
+  if (part != 1) return;
   // Detect motion from camera
   img.loadPixels();
   let data = img.pixels;
-  for (let x = 0; x < img.width; x+=CAM_SCALE) {
-    for (let y = 0; y < img.height; y+=CAM_SCALE) {
-
+  let s = 0;
+  for (let x = 0; x < img.width; x += CAM_SCALE) {
+    for (let y = 0; y < img.height; y += CAM_SCALE) {
+      s += 0.0001;
       let pos = (x + y * img.width) * 4;
       let r = data[pos];
-      let g = data[pos+1];
-      let b = data[pos+2];
-      let br = brightness(color(r,g,b));
+      let g = data[pos + 1];
+      let b = data[pos + 2];
+      let br = brightness(color(r, g, b));
 
-      if(old[pos] && abs(old[pos] - br) > CAM_TH) {
-        movement += 0.01;
+      if (old[pos] && abs(old[pos] - br) > CAM_TH) {
+        movement += (1 / (1 + exp(-s))) - 0.5;
       }
       old[pos] = br; //{ red: r, green: g, blue: b};
     }
   }
-  if (movement > 1) {
+  console.log("m: " + nfs(movement, 0, 2) + "\tm_th: " + nfs(m_th, 0, 2));
+  // If we're in part 1
+  if (movement > m_th) {
     addBalls(movement);
     movement = 0;
   }
@@ -285,34 +318,51 @@ function time() {
   seconds = seconds % 60;
   timer.html(nfs(minute, 2, 0) + ":" + nfs(int(seconds), 2, 0));
 
-  // Turn off background sound
-  if (!recording) {
+  let time = millis();
+  if (perform) {
+    // Start up cafe sound again for part 2
+    if (part == 2) {
+      bgsound.loop();
+      // Fade it in over 5 seconds, after 10 seconds
+      bgsound.setVolume(1, 5, 10);
+      part == null;
+    }
+    // Automatically proceed to part 2 after 15 minutes
+    else if (time > MAX_END_TIME) {
+      part = 2;
+    }
+    // Stop the whine and then proceed to part 1
+    else if (part == 0 && time > BUFFER) {
+      whine.amp(0);
+      whine.stop();
+      part = 1;
+    }
+    // Stop cafe noise
+    else if (part == 0 && time > PLAYTIME) {
+      bgsound.pause();
+    }
+  }
+
+  // Replay recorded data until the end
+  if (part == 1) {
     if (replay) {
       //console.log("REPLAY!");
-      if (millis() > rpdata[rp].m + PLAYTIME) {
+      if (time > rpdata[rp].m + BUFFER) {
         addBalls(rpdata[rp].num);
         rp++;
-        if (rp >= rpdata.length - 1) replay = false;
+        if (rp >= rpdata.length - 1) part = 2;
       }
     }
     else {
-      //console.log("BOOKENDS");
-      if (millis() > 11 * 60 * 1000 && rp >= rpdata.length - 1 && !bgsound.isPlaying()) {
-        bgsound.loop();
-        // Fade it in over 5 seconds, after 10 seconds
-        bgsound.setVolume(1, 5, 10);
+      if (webcam) {
+        // Use webcam
+        processCamera(webcam);
       }
-      else if (rp < 1 && millis() > PLAYTIME + WHINETIME) {
-        whine.amp(0);
-        whine.stop();
-        replay = true;
-      }
-      else if (rp < 1 && millis() > PLAYTIME) {
-        bgsound.pause();
+      else {
+        // Set up video
+        webcam = createCapture(VIDEO);
+        webcam.hide();
       }
     }
-  }
-  else {
-    bgsound.pause();
   }
 }
