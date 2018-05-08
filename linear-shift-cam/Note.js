@@ -43,12 +43,12 @@ class Note {
 
   play() {
     this.counter++;
-    this.note.amp(this.counter / mult, 0.05);
+    this.note.amp(NMULT*this.counter / mult, 0.05);
   }
 
   pause() {
     if (this.counter > 0) this.counter--;
-    this.note.amp(this.counter / mult, 0.05);
+    this.note.amp(NMULT*this.counter / mult, 0.05);
   }
 
   contains(loc) {
