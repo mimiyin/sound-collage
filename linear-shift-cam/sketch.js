@@ -13,9 +13,11 @@ let scales, scale, areas, ratios;
 let mult = 1;
 let TOTAL_OCTAVES = 5;
 let BASE = 110;
+let RANGE_RATE = 0.005; // Rate of range change
 let numOctaves = 3;
+let xshift = 0;
 let ow = 100;
-let stepSize = 0.00001;
+let MOD_RATE = 0.00001; // Rate of modulation
 
 let keyboard = [];
 let balls = [];
@@ -45,36 +47,36 @@ let recordJSON = {
 let bgsound;
 let whine;
 
-let BGBEG = 0.1;
+// Volumes of sound
+let BGBEG = 0.5;
 let BGMID = 2;
-let BGEND = 1;
+let BGEND = 0.1;
 let WHINEVOL = 0.005;
 
 let FR = 25;
 let PLAYTIME = 4 * 60 * 1000; // 4 minutes
+let PLAYTIME_IN_SECONDS = PLAYTIME / 1000;
 let WHINETIME = 5 * 60 * 1000; // 5 minutes
-let MAX_END_TIME = 15 * FR * 1000;
-let buffer = 0;
 let b = 0;
-let start = false;
 
 // Where to start?
-let part;
+let part = -1;
+let start = false;
 
 // Keeping track of time elapsed
 let timer;
 
 // Get data from camera
 let cnv;
-let webcam;
+let ipcam;
 let CW = 1280;
 let CH = 360;
 
 let old = [];
 let movement = 0;
 let ramp = 0;
-let CAM_SCALE = 40;
-let CAM_TH = 50;
+let CAM_SCALE = 40; // Sensitivity of camera
+let CAM_TH = 50; // Sensitivity of camera
 
 let m_th = 1;
 
@@ -121,24 +123,38 @@ function setup() {
   // Set up timer
   timer = createP();
   timer.attribute('id', 'timer');
-
-  if (perform) {
-    // Set up background sound
-    bgsound.loop();
-    bgsound.setVolume(BGBEG);
-  }
 }
 
 function reset() {
   ow = width / numOctaves;
+  if (numOctaves <= 2) {
+    xshift_mult = -2;
+  }
+  else if (numOctaves <= 4) {
+    xshift_mult = -1;
+  }
+  else {
+    xshift_mult = 0;
+  }
+  xshift = xshift_mult * ow;
+
+  // Update keyboard
+  for (let o = 0; o < keyboard.length; o++) {
+    let octave = keyboard[o];
+    for (let n = 0; n < octave.length; n++) {
+      let note = keyboard[o][n];
+      note.updateX(xshift);
+    }
+  }
 }
 
 
 
 function draw() {
   time();
-  //updateRange();
+  updateRange();
 
+  //Run keyboard
   for (let o = 0; o < keyboard.length; o++) {
     let octave = keyboard[o];
     for (let n = 0; n < octave.length; n++) {
@@ -178,7 +194,7 @@ function draw() {
   // Print out which part
   fill(255);
   noStroke();
-  text("Part: " + part + "\tStart: " + start, 20, height - 50);
+  text("Part: " + part, 20, height - 50);
 }
 
 // Paramaters are tonic index and tonic note.
@@ -192,7 +208,7 @@ function updateRelativeNotes(t, tn) {
       // Calculate the relative note
       let rn = n >= t ? n - t : (n + (octave.length - 1)) - t;
       let h = (areas[rn] - note.h);
-      note.modulate(areas[rn], tn.counter * stepSize);
+      note.modulate(areas[rn], tn.counter * MOD_RATE);
     }
   }
 }
@@ -222,8 +238,8 @@ function calcRatios() {
 function updateRange() {
   // Change the range with a noisy walker
   let pNumOctaves = numOctaves;
-  let t = frameCount * 0.001;
-  numOctaves = sin((noise(t) * t)) * 5;
+  let t = frameCount * RANGE_RATE;
+  numOctaves = (sin((noise(t) * TWO_PI)) * 0.5 + 0.5) * 5;
   if (frameCount % FR == 0) {
     console.log("num octaves: " + nfs(numOctaves, 0, 2));
   }
@@ -244,7 +260,7 @@ function addBalls(num) {
 
 function mouseMoved() {
   // Don't create new balls if replaying
-  if (replay || part != 1 || !pmouseX) return;
+  if (replay || part != 2 || !pmouseX) return;
   speed += dist(pmouseX, pmouseY, mouseX, mouseY) / diag;
   if (speed > 1) {
     addBalls(speed);
@@ -273,6 +289,9 @@ function keyPressed() {
     case '4':
       part = 4;
       break;
+    case '5':
+      part = 5;
+      break;
   }
 
   // Change motion threshold for creating notes
@@ -284,7 +303,10 @@ function keyPressed() {
       m_th -= 0.1;
       break;
     case ENTER:
+      // Start/stop performance
       start = !start;
+      // Set buffer time
+      b = start ? millis() : 0;
       break;
   }
 }
@@ -323,34 +345,60 @@ function time() {
   seconds = seconds % 60;
   timer.html(nfs(minute, 2, 0) + ":" + nfs(int(seconds), 2, 0));
 
-  let time = millis();
+  // Start counting again when we start
+  let time = part < 1 ? millis() : millis() - b;
   if (perform) {
-    // Update the buffer if performing
-    buffer = PLAYTIME + WHINETIME + b;
+    // Don't play background in parts 2 and 3
+    if ((part == 2 || part == 3) && bgsound.isPlaying()) bgsound.pause();
 
-    // Start up cafe sound again for part 2
-    if (part == 3) {
+    // Start up cafe sound again for the end
+    if (part == 4) {
       bgsound.loop();
       // Fade it in over 5 seconds, after 10 seconds
       bgsound.setVolume(BGEND, 5, 10);
-      part = 4;
+      part = 5;
     }
-    // Automatically proceed to part 2 after 15 minutes
-    else if (time > MAX_END_TIME) {
-      part = 2;
+    else if (part == 3) {
+      // Do nothing, just fading out sound
     }
-    // Stop the whine and then proceed to part 1
-    else if (part == 0 && time > buffer) {
+    // Replay recorded data until the end
+    else if (part == 2) {
+      if (replay) {
+        //console.log("REPLAY!");
+        if (time > rpdata[rp].m + PLAYTIME + WHINETIME) {
+          addBalls(rpdata[rp].num);
+          rp++;
+          if (rp >= rpdata.length - 1) part = 3;
+        }
+      }
+      else if (!ipcam) {
+        // Set up video
+        ipcam = new Image();
+        //ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=1280x360&camera=2';
+        ipcam.onload = function () {
+          let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+          setInterval(function () {
+            ctx.drawImage(ipcam, 0, 0, CW, CH);
+            processCamera(ipcam);
+          }, 100);
+        }
+        ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=2';
+      }
+    }
+    // Stop the whine and then proceed to part 2
+    else if (part == 1 && time > PLAYTIME + WHINETIME) {
       whine.amp(0);
       whine.stop();
-      part = 1;
+      part = 2;
     }
-    // Stop cafe noise
-    else if (part == 0 && time > PLAYTIME + b) {
+    // Stop cafe noise at the end of part 1
+    else if (part == 1 && time > PLAYTIME) {
       bgsound.pause();
     }
-    else if (part == undefined && start) {
-      bgsound.setVolume(BGMID, (PLAYTIME + b) / 1000);
+    // Start whine at the beginning of 1
+    else if (part == 0 && start) {
+      // Ramp up bgsound to mid-volume
+      bgsound.setVolume(BGMID, PLAYTIME_IN_SECONDS);
 
       // Set up whine
       whine = new p5.Oscillator();
@@ -358,41 +406,16 @@ function time() {
       whine.freq(BASE * pow(2, 6));
       whine.amp(0);
       whine.start();
-      whine.amp(WHINEVOL, (PLAYTIME + b) / 1000);
+      whine.amp(WHINEVOL, PLAYTIME_IN_SECONDS);
 
-      // Begin
+      // Proceed to beginning
+      part = 1;
+    }
+    else if(part < 0){
+      bgsound.loop();
+      bgsound.setVolume(BGBEG);
       part = 0;
-
-      // Set buffer time
-      b = time;
     }
   }
 
-  // Don't play background in parts 1 and 2
-  if ((part == 1 || part == 2) && bgsound.isPlaying()) bgsound.pause();
-
-  // Replay recorded data until the end
-  if (part == 1) {
-    if (replay) {
-      //console.log("REPLAY!");
-      if (time > rpdata[rp].m + buffer) {
-        addBalls(rpdata[rp].num);
-        rp++;
-        if (rp >= rpdata.length - 1) part = 2;
-      }
-    }
-    else if (!webcam) {
-      // Set up video
-      webcam = new Image();
-      //webcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=1280x360&camera=2';
-      webcam.onload = function () {
-        let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        setInterval(function () {
-          ctx.drawImage(webcam, 0, 0, CW, CH);
-          processCamera(webcam);
-        }, 100);
-      }
-      webcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=2';
-    }
-  }
 }
