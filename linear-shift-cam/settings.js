@@ -42,6 +42,8 @@ const BGEND = 0.1;
 const WHINEVOL = 0.005;
 
 const FR = 60;
+const IPCAM_FPS = 30;
+const MSPF = 1000/IPCAM_FPS;
 const PLAYTIME = 3 * 60 * 1000; // 4 minutes
 const PLAYTIME_IN_SECONDS = PLAYTIME / 1000;
 const WHINETIME = 4 * 60 * 1000; // 5 minutes
@@ -80,13 +82,14 @@ for(let a in ACTS) {
 // Get data from camera
 let cnv;
 let ipcam;
-const CAM = 1; // Camera number
-const CW = 720; //1280;
-const CH = 720; //360;
+const CAM = 2; //1; // Camera number
+const CW = 1280; //720; //1280;
+const CH = 360; //720; //360;
 
 let old = [];
 let movement = 0;
 let ramp = 0;
 const CAM_SCALE = 1; //40; // Sensitivity of camera
-const CAM_TH = 20; //50; // Sensitivity of camera
-let m_th = CW*CH*0.1;
+const CAM_TH = 10; //50; // Sensitivity of camera
+let m_th_mult = 0.1;
+let m_th = CW*CH*m_th_mult;

@@ -286,7 +286,7 @@ function time() {
           if (act != ACTS.DARK) return;
           ctx.drawImage(ipcam, 0, 0, CW, CH);
           processCamera(ipcam);
-        }, 100);
+        }, MSPF);
       }
       ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=' + CAM;
     }
@@ -380,12 +380,12 @@ function keyPressed() {
   // Change motion threshold for creating notes
   switch (keyCode) {
     case UP_ARROW:
-      m_th += CW * CH * 0.1;
+      m_th += CW * CH * m_th_mult;
       break;
     case DOWN_ARROW:
-      m_th -= CW * CH * 0.1;
+      m_th -= CW * CH * m_th_mult;
       break;
   }
   // Make it possible to not be able to create new notes
-  m_th = constrain(m_th, CW * CH * 0.1, CW * CH * 1.1);
+  m_th = constrain(m_th, CW * CH * m_th_mult, CW * CH * 1.1);
 }
