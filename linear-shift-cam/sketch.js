@@ -13,8 +13,8 @@ function setup() {
     rpdata = record.data;
   } else {
     cvn = createCanvas(windowWidth, windowHeight);
+    frameRate(FR);
     if (RECORD) {
-      frameRate(FR);
       // Record setup
       recordJSON.setup.w = width;
       recordJSON.setup.h = height;
@@ -36,6 +36,11 @@ function setup() {
   randomSeed(0);
 
   colorMode(HSB, 100);
+
+  // WHINE
+  whine = new p5.Oscillator();
+  whine.setType('sine');
+  whine.freq(BASE * pow(2, 6));
 
   // Set up timer
   timer = createP();
@@ -111,7 +116,12 @@ function draw() {
   fill(0);
   rect(0, height - 100, width, 100);
   fill(255);
-  text("Act: " + act + "\tFPS: " + nfs(frameRate(), 0, 2), 20, height - 50);
+
+  let actTitle;
+  for (let a in ACTS) {
+    if (ACTS[a] == act) actTitle = a;
+  }
+  text("Act " + act + ": " + actTitle + "\tFPS: " + nfs(frameRate(), 0, 2), 20, height - 50);
 }
 
 // Paramaters are tonic index and tonic note.
@@ -157,23 +167,19 @@ function updateRange() {
   let pNumOctaves = numOctaves;
   let t = frameCount * RANGE_RATE;
   numOctaves = (sin((noise(t) * TWO_PI)) * 0.5 + 0.5) * 5;
-  if (frameCount % FR == 0) {
-    //console.log("num octaves: " + nfs(numOctaves, 0, 2));
-  }
+  //if (frameCount % FR == 0) console.log("num octaves: " + nfs(numOctaves, 0, 2));
+
   numOctaves = round(numOctaves);
   numOctaves = constrain(numOctaves, 1, TOTAL_OCTAVES);
   if (pNumOctaves != numOctaves) reset();
 }
 
 function addBalls(num) {
-  num = map(num, m_th, m_th*2, 1, 10);
   if (RECORD) recordJSON.data.push({
     m: millis(),
     num: num
   });
-  for (let i = 0; i < num; i++) {
-    balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-5, 5), 300 * num));
-  }
+  balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), 300 * num));
 }
 
 function mouseMoved() {
@@ -183,6 +189,159 @@ function mouseMoved() {
   if (speed > 1) {
     addBalls(speed);
     speed = 0;
+  }
+}
+
+function processCamera() {
+  // Detect motion from camera
+  loadPixels();
+  let data = pixels;
+  for (let x = 0; x < CW; x += CAM_SCALE) {
+    for (let y = 0; y < CH; y += CAM_SCALE) {
+      let pos = (x + y * width) * 4;
+      let r = data[pos];
+
+      if (old[pos] && abs(old[pos] - r) > CAM_TH) {
+        movement++;
+      }
+      old[pos] = r;
+    }
+  }
+
+  console.log("m: " + nfs(movement/(CW*CH), 0, 3) + "\tm_th: " + nfs(m_th/(CW*CH), 0, 2));
+
+  // When movement reaches a threshold
+  if (movement > m_th) {
+    console.log("ADD BALLS");
+    addBalls(movement);
+    movement = 0;
+  }
+}
+
+function msToMMSS(ms) {
+  // Display the time elapsed in mm:ss;
+  let seconds = ms / 1000;
+  let minute = floor(seconds / 60);
+  seconds = seconds % 60;
+  return nfs(minute, 2, 0) + ":" + nfs(int(seconds), 2, 0);
+}
+
+function time() {
+
+  // Update current timer
+  timers[act] = msToMMSS(millis() - lastCue);
+  // Display timers
+  timer.html(
+    "ENTER: " + timers[ACTS.ENTER] +
+    "\tLIGHT: " + timers[ACTS.LIGHT] +
+    "\tDARK: " + timers[ACTS.DARK] +
+    "\tEND: " + timers[ACTS.END] +
+    "\tRETURN: " + timers[ACTS.RETURN] +
+    "\tTOTAL: " + msToMMSS(millis()));
+
+  // Start up cafe sound again for the end
+  if (cue == CUES.RETURN) {
+    console.log("RETURN!");
+    // Log time
+    act = ACTS.RETURN;
+    lastCue = millis();
+
+    // Fade it in over 5 seconds
+    bgsound.loop();
+    bgsound.setVolume(0);
+    setTimeout(function() {
+      bgsound.setVolume(BGEND, 10);
+    }, 1000)
+    cue = 0;
+  }
+  // Let sound die out
+  else if (cue == CUES.STOPDARK) {
+    console.log("STOP DARK!");
+    // Log time
+    act = ACTS.END;
+    lastCue = millis();
+    // Do nothing, just fading out sound
+    cue = CUES.WAIT;
+  }
+  // REPLAY recorded data until the end
+  else if (cue == CUES.STARTDARK) {
+    console.log("START DARK!");
+    // Log time
+    act = ACTS.DARK;
+    lastCue = millis();
+
+    if (REPLAY) {
+      if (time > rpdata[rp].m + PLAYTIME + WHINETIME) {
+        addBalls(rpdata[rp].num);
+        rp++;
+        if (rp >= rpdata.length - 1) part = 3;
+      }
+    } else if (!ipcam) {
+      // Set up video
+      ipcam = new Image();
+      ipcam.onload = function() {
+        console.log("GOT FEED!");
+        let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        setInterval(function() {
+          if (act != ACTS.DARK) return;
+          ctx.drawImage(ipcam, 0, 0, CW, CH);
+          processCamera(ipcam);
+        }, 100);
+      }
+      ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=' + CAM;
+    }
+    cue = CUES.WAIT;
+  }
+  // Stop the whine and then proceed to part 2
+  else if (cue == CUES.STOPWHINE) {
+    console.log("STOP WHINE!");
+    // Stop the whine if it's there
+    if (whine) {
+      whine.amp(0);
+      whine.stop();
+    }
+    cue = CUES.WAIT;
+    setTimeout(function() {
+      cue = CUES.STARTDARK;
+    }, 5000);
+  }
+  // Stop cafe noise at the end of part 1
+  else if (cue == CUES.STOPBG) {
+    console.log("STOP BG!");
+    bgsound.pause();
+    cue = CUES.WAIT;
+    setTimeout(function() {
+      cue = CUES.STOPWHINE;
+    }, WHINETIME - PLAYTIME);
+  }
+  // Begin installation
+  else if (cue == CUES.STARTBG) {
+    console.log("LIGHT!");
+    // Log time
+    act = ACTS.LIGHT;
+    lastCue = millis();
+
+    // Ramp up bgsound to mid-volume
+    bgsound.setVolume(BGMID, PLAYTIME_IN_SECONDS);
+
+    // Set up whine
+    whine.amp(0);
+    whine.start();
+    setTimeout(function() {
+      whine.amp(WHINEVOL, PLAYTIME_IN_SECONDS);
+    }, 1000);
+
+    cue = CUES.WAIT;
+    setTimeout(function() {
+      cue = CUES.STOPBG;
+    }, PLAYTIME);
+  }
+  // Play bgsound when people enter
+  else if (cue == CUES.ENTER) {
+    console.log("ENTER!");
+    bgsound.loop();
+    bgsound.setVolume(BGBEG);
+    cue = CUES.WAIT;
   }
 }
 
@@ -213,158 +372,20 @@ function keyPressed() {
     case '6':
       cue = 6;
       break;
+    case '7':
+      cue = 7;
+      break;
   }
 
   // Change motion threshold for creating notes
   switch (keyCode) {
-    case RIGHT_ARROW:
-      m_th += CW*CH*0.1;
+    case UP_ARROW:
+      m_th += CW * CH * 0.1;
       break;
-    case LEFT_ARROW:
-      m_th -= CW*CH*0.1;
+    case DOWN_ARROW:
+      m_th -= CW * CH * 0.1;
       break;
   }
-
-  m_th = constrain(m_th, CW*CH*0.1, CW*CH);
-}
-
-function processCamera() {
-  if (act != ACTS.DARK) return;
-  // Detect motion from camera
-  loadPixels();
-  let data = pixels;
-  for (let x = 0; x < CW; x += CAM_SCALE) {
-    for (let y = 0; y < CH; y += CAM_SCALE) {
-      let pos = (x + y * width) * 4;
-      let r = data[pos];
-
-      if (old[pos] && abs(old[pos] - r) > CAM_TH) {
-        movement++;
-      }
-      old[pos] = r; //{ red: r, green: g, blue: b};
-    }
-  }
-  //if(frameCount%30 == 0)
-  console.log("m: " + nfs(movement, 0, 3) + "\tm_th: " + nfs(m_th, 0, 2));
-  // If we're in act 1
-  if (movement > m_th) {
-    console.log("ADD BALLS");
-    addBalls(movement);
-    movement = 0;
-  }
-}
-
-function msToMMSS(ms) {
-  // Display the time elapsed in mm:ss;
-  let seconds = ms / 1000;
-  let minute = floor(seconds / 60);
-  seconds = seconds % 60;
-  return nfs(minute, 2, 0) + ":" + nfs(int(seconds), 2, 0);
-}
-
-function time() {
-
-  // Update current timer
-  timers[act] = msToMMSS(millis() - lastCue);
-  console.log();
-  // Display timers
-  timer.html(
-    "ENTER: " + timers[ACTS.ENTER] +
-    "\tLIGHT: " + timers[ACTS.LIGHT] +
-    "\tDARK: " + timers[ACTS.DARK] +
-    "\tEND: " + timers[ACTS.END] +
-    "\tRETURN: " + timers[ACTS.RETURN] +
-    "\tTOTAL: " + msToMMSS(millis()));
-
-  // Start up cafe sound again for the end
-  if (cue == CUES.RETURN) {
-    // Log time
-    act = ACTS.RETURN;
-    lastCue = millis();
-
-    bgsound.loop();
-    // Fade it in over 5 seconds, after 10 seconds
-    bgsound.setVolume(BGEND, 5, 10);
-    cue = 0;
-  } else if (cue == CUES.STOPDARK) {
-    // Log time
-    act = ACTS.END;
-    lastCue = millis();
-
-    // Do nothing, just fading out sound
-  }
-  // REPLAY recorded data until the end
-  else if (cue == CUES.STARTDARK) {
-    if (REPLAY) {
-      //console.log("REPLAY!");
-      if (time > rpdata[rp].m + PLAYTIME + WHINETIME) {
-        addBalls(rpdata[rp].num);
-        rp++;
-        if (rp >= rpdata.length - 1) part = 3;
-      }
-    } else if (!ipcam) {
-      // Set up video
-      ipcam = new Image();
-      //ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=1280x360&camera=2';
-      ipcam.onload = function() {
-        console.log("GOT FEED!");
-        let ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        setInterval(function() {
-          ctx.drawImage(ipcam, 0, 0, CW, CH);
-          processCamera(ipcam);
-        }, 100);
-      }
-      ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=' + CAM;
-    }
-    cue = CUES.WAIT;
-  }
-  // Stop the whine and then proceed to part 2
-  else if (cue == CUES.STOPWHINE) {
-    // Log time
-    act = ACTS.DARK;
-    lastCue = millis();
-
-    // Stop the whine if it's there
-    if (whine) {
-      whine.amp(0);
-      whine.stop();
-    }
-    cue = CUES.WAIT;
-    setTimeout(function() {
-      cue = CUES.STARTDARK;
-    }, 5000);
-  }
-  // Stop cafe noise at the end of part 1
-  else if (cue == CUES.STOPBG) {
-    bgsound.pause();
-    cue = CUES.WAIT;
-    setTimeout(function() {
-      cue = CUES.STOPWHINE;
-    }, WHINETIME - PLAYTIME);
-  }
-  // Begin installation
-  else if (cue == CUES.STARTBG) {
-    console.log("LIGHT!");
-    // Log time
-    act = ACTS.LIGHT;
-    lastCue = millis();
-
-    // Ramp up bgsound to mid-volume
-    bgsound.setVolume(BGMID, PLAYTIME_IN_SECONDS);
-
-    // Set up whine
-    whine = new p5.Oscillator();
-    whine.setType('sine');
-    whine.freq(BASE * pow(2, 6));
-    whine.amp(0);
-    whine.amp(WHINEVOL, PLAYTIME);
-    whine.start();
-
-    cue = CUES.WAIT;
-  } else if (cue == CUES.ENTER) {
-    console.log("ENTER!");
-    bgsound.loop();
-    bgsound.setVolume(BGBEG);
-    cue = CUES.WAIT;
-  }
+  // Make it possible to not be able to create new notes
+  m_th = constrain(m_th, CW * CH * 0.1, CW * CH * 1.1);
 }

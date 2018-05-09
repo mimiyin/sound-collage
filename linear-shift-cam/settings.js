@@ -36,15 +36,15 @@ let bgsound;
 let whine;
 
 // Volumes of sound
-const BGBEG = 0.1;
-const BGMID = 2;
+const BGBEG = 0.5;
+const BGMID = 5;
 const BGEND = 0.1;
-const WHINEVOL = 0.0005;
+const WHINEVOL = 0.005;
 
-const FR = 25;
-const PLAYTIME = 4 * 60 * 1000; // 4 minutes
+const FR = 60;
+const PLAYTIME = 3 * 60 * 1000; // 4 minutes
 const PLAYTIME_IN_SECONDS = PLAYTIME / 1000;
-const WHINETIME = 5 * 60 * 1000; // 5 minutes
+const WHINETIME = 4 * 60 * 1000; // 5 minutes
 
 // Where to start?
 let CUES = {
@@ -88,5 +88,5 @@ let old = [];
 let movement = 0;
 let ramp = 0;
 const CAM_SCALE = 1; //40; // Sensitivity of camera
-const CAM_TH = 12; //50; // Sensitivity of camera
+const CAM_TH = 20; //50; // Sensitivity of camera
 let m_th = CW*CH*0.1;
