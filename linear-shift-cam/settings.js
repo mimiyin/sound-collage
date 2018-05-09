@@ -84,7 +84,7 @@ let cnv;
 let ipcam;
 const CAM = 2; //1; // Camera number
 const CW = 1280; //720; //1280;
-const CH = 360; //720; //360;
+const CH = 480; //720; //360;
 
 let old = [];
 let movement = 0;
@@ -93,3 +93,10 @@ const CAM_SCALE = 1; //40; // Sensitivity of camera
 const CAM_TH = 10; //50; // Sensitivity of camera
 let m_th_mult = 0.1;
 let m_th = CW*CH*m_th_mult;
+
+// Whether or not we're setting camera area
+let select = false;
+let cx = 280;
+let cy = 0;
+let cw = CW-cx;
+let ch = CH;

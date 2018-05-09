@@ -101,6 +101,7 @@ function draw() {
       let note = keyboard[o][n];
       y -= note._rh * mult;
       note.update(y);
+      if(!select) note.show();
     }
   }
 
@@ -117,6 +118,7 @@ function draw() {
   rect(0, height - 100, width, 100);
   fill(255);
 
+  // Cue Status
   let actTitle;
   for (let a in ACTS) {
     if (ACTS[a] == act) actTitle = a;
@@ -196,8 +198,8 @@ function processCamera() {
   // Detect motion from camera
   loadPixels();
   let data = pixels;
-  for (let x = 0; x < CW; x += CAM_SCALE) {
-    for (let y = 0; y < CH; y += CAM_SCALE) {
+  for (let x = cx; x < cw; x += CAM_SCALE) {
+    for (let y =cy; y < ch; y += CAM_SCALE) {
       let pos = (x + y * width) * 4;
       let r = data[pos];
 
@@ -285,6 +287,12 @@ function time() {
         setInterval(function() {
           if (act != ACTS.DARK) return;
           ctx.drawImage(ipcam, 0, 0, CW, CH);
+          // Draw selection
+          if(select) {
+            noFill();
+            stroke('red');
+            rect(cx, cy, cw, ch);
+          }
           processCamera(ipcam);
         }, MSPF);
       }
@@ -380,12 +388,30 @@ function keyPressed() {
   // Change motion threshold for creating notes
   switch (keyCode) {
     case UP_ARROW:
-      m_th += CW * CH * m_th_mult;
+      m_th += cw * ch * m_th_mult;
       break;
     case DOWN_ARROW:
-      m_th -= CW * CH * m_th_mult;
+      m_th -= cw * ch * m_th_mult;
       break;
   }
   // Make it possible to not be able to create new notes
-  m_th = constrain(m_th, CW * CH * m_th_mult, CW * CH * 1.1);
+  m_th = constrain(m_th, cw * ch * m_th_mult, cw * ch * 1.1);
+}
+
+// Set area to analyze
+function mousePressed() {
+  if(!select) return;
+  cx = mouseX;
+  cy = mouseY;
+  cx = constrain(cx, 0, CW);
+  cy = constrain(cy, 0, CH);
+}
+
+function mouseReleased() {
+  if(!select) return;
+  cw = mouseX - cx;
+  ch = mouseY - cy;
+  cw = constrain(cw, 0, CW);
+  ch = constrain(ch, 0, CH);
+  console.log(cx, cy, cw, ch);
 }

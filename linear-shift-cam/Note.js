@@ -67,6 +67,5 @@ class Note {
       }
     }
     if (!isPlaying) this.pause();
-    this.show();
   }
 }
