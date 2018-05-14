@@ -181,7 +181,7 @@ function addBalls(num) {
     m: millis(),
     num: num
   });
-  balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), 300 * num));
+  balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), 300));
 }
 
 function mouseMoved() {
@@ -197,20 +197,18 @@ function mouseMoved() {
 function processCamera() {
   // Detect motion from camera
   loadPixels();
-  let data = pixels;
   for (let x = cx; x < cw; x += CAM_SCALE) {
     for (let y =cy; y < ch; y += CAM_SCALE) {
       let pos = (x + y * width) * 4;
-      let r = data[pos];
-
-      if (old[pos] && abs(old[pos] - r) > CAM_TH) {
+      let r = pixels[pos];
+      if (old[pos] && (abs(old[pos] - r) > CAM_TH)) {
         movement++;
       }
       old[pos] = r;
     }
   }
 
-  console.log("m: " + nfs(movement/(CW*CH), 0, 3) + "\tm_th: " + nfs(m_th/(CW*CH), 0, 2));
+  console.log("m: " + nfs(movement/(cw*ch), 0, 3) + "\tm_th: " + nfs(m_th/(cw*ch), 0, 2));
 
   // When movement reaches a threshold
   if (movement > m_th) {
@@ -279,6 +277,7 @@ function time() {
         if (rp >= rpdata.length - 1) part = 3;
       }
     } else if (!ipcam) {
+      return;
       // Set up video
       ipcam = new Image();
       ipcam.onload = function() {
@@ -287,14 +286,15 @@ function time() {
         setInterval(function() {
           if (act != ACTS.DARK) return;
           ctx.drawImage(ipcam, 0, 0, CW, CH);
+          processCamera(ipcam);
+
           // Draw selection
           if(select) {
             noFill();
             stroke('red');
             rect(cx, cy, cw, ch);
           }
-          processCamera(ipcam);
-        }, MSPF);
+        }, 34);
       }
       ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=' + CAM;
     }

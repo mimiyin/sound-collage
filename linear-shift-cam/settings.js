@@ -42,7 +42,7 @@ const BGEND = 0.1;
 const WHINEVOL = 0.005;
 
 const FR = 60;
-const IPCAM_FPS = 30;
+const IPCAM_FPS = 25;
 const MSPF = 1000/IPCAM_FPS;
 const PLAYTIME = 3 * 60 * 1000; // 4 minutes
 const PLAYTIME_IN_SECONDS = PLAYTIME / 1000;
@@ -91,12 +91,13 @@ let movement = 0;
 let ramp = 0;
 const CAM_SCALE = 1; //40; // Sensitivity of camera
 const CAM_TH = 10; //50; // Sensitivity of camera
-let m_th_mult = 0.1;
-let m_th = CW*CH*m_th_mult;
 
 // Whether or not we're setting camera area
 let select = false;
 let cx = 280;
 let cy = 0;
-let cw = CW-cx;
+let cw = CW-(cx*2);
 let ch = CH;
+
+let m_th_mult = 0.1;
+let m_th = cw*ch*m_th_mult;
