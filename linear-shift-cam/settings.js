@@ -5,6 +5,7 @@ const BASE = 110;
 const RANGE_RATE = 0.001; // Rate of range change
 let numOctaves = 3;
 let xshift = 0;
+let xshift_mult = 0;
 let ow = 100;
 const MOD_RATE = 0.00001; // Rate of modulation
 const NMULT = 0.1; // Modifier on note volume

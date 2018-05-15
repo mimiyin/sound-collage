@@ -37,11 +37,6 @@ function setup() {
 
   colorMode(HSB, 100);
 
-  // WHINE
-  whine = new p5.Oscillator();
-  whine.setType('sine');
-  whine.freq(BASE * pow(2, 6));
-
   // Set up timer
   timer = createP();
   timer.attribute('id', 'timer');
@@ -333,6 +328,9 @@ function time() {
     bgsound.setVolume(BGMID, PLAYTIME_IN_SECONDS);
 
     // Set up whine
+    whine = new p5.Oscillator();
+    whine.setType('sine');
+    whine.freq(BASE * pow(2, 6));
     whine.amp(0);
     whine.start();
     setTimeout(function() {
