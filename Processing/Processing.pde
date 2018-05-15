@@ -60,7 +60,7 @@ final int CAM_TH = 5; //50; // Sensitivity of camera
 final String IPCAM_ADDRESS = "http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=" + CW + "x" + CH + "&camera=" + CAM;
 
 // Whether or not we're setting camera area
-boolean select = false;
+const boolean DEBUG = false;
 int cx = 280;
 int cy = 0;
 int cw = CW-(cx*2);
@@ -108,11 +108,11 @@ void setup() {
 }
 
 void draw() { 
-  if(!select) background(0);
+  if(!DEBUG) background(0);
 
   if (act == ACTS.DARK && ipcam != null && ipcam.isAvailable()) {
     ipcam.read();
-    if (select) image(ipcam, 0, 0);
+    if (DEBUG) image(ipcam, 0, 0);
     processCamera(ipcam);
   }
 
@@ -145,7 +145,7 @@ void draw() {
       Note note = keyboard[o][n];
       y -= note._rh * mult;
       note.updateY(y);
-      if (!select) note.show();
+      if (!DEBUG) note.show();
     }
   }
 
@@ -196,7 +196,7 @@ void keyPressed() {
 
 // Set area to analyze
 void mousePressed() {
-  if (!select) return;
+  if (!DEBUG) return;
   cx = mouseX;
   cy = mouseY;
   cx = constrain(cx, 0, CW);
@@ -204,7 +204,7 @@ void mousePressed() {
 }
 
 void mouseReleased() {
-  if (!select) return;
+  if (!DEBUG) return;
   cw = mouseX - cx;
   ch = mouseY - cy;
   cw = constrain(cw, 0, CW);
