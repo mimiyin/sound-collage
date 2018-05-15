@@ -19,14 +19,14 @@ void processCamera(IPCapture ipcam) {
 
   // When movement reaches a threshold
   if (movement > m_th) {
-    addBalls(movement);
+    addBalls(CAM_TO_MOUSE_RATIO*movement/m_th);
     movement = 0;
   }
 }
 
 void addBalls(float num) {
-  num = constrain(num, 0, 1);
+  num = constrain(num, 0, 10);
   println("ADD BALLS: " + num);
   // x, y, w, h, yspeed, lifespan (max is 1 minute)
-  balls.add(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), int(60*1000*num)));
+  balls.add(new Ball(random(width), random(height), 20, 20, random(-1, 1), random(-1, 1), int(MAX_NOTE_LENGTH*frameRate*num)));
 }

@@ -95,7 +95,7 @@ function draw() {
     for (let n = 0; n < octave.length; n++) {
       let note = keyboard[o][n];
       y -= note._rh * mult;
-      note.update(y);
+      note.updateY(y);
       if(!select) note.show();
     }
   }
@@ -118,7 +118,7 @@ function draw() {
   for (let a in ACTS) {
     if (ACTS[a] == act) actTitle = a;
   }
-  text("Act " + act + ": " + actTitle + "\tFPS: " + nfs(frameRate(), 0, 2), 20, height - 50);
+  text("Act " + act + ": " + actTitle + "\tFPS: " + int(frameRate()), 20, height - 50);
 }
 
 // Paramaters are tonic index and tonic note.
@@ -172,11 +172,12 @@ function updateRange() {
 }
 
 function addBalls(num) {
+  num = constrain(num, 0, 1);
   if (RECORD) recordJSON.data.push({
     m: millis(),
     num: num
   });
-  balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), 300));
+  balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), 60 * 1000 * num));
 }
 
 function mouseMoved() {
@@ -203,7 +204,9 @@ function processCamera() {
     }
   }
 
-  console.log("m: " + nfs(movement/(cw*ch), 0, 3) + "\tm_th: " + nfs(m_th/(cw*ch), 0, 2));
+  movement /= cw*ch;
+
+  console.log("m: " + nfs(movement, 0, 3) + "\tm_th: " + nfs(m_th, 0, 3));
 
   // When movement reaches a threshold
   if (movement > m_th) {

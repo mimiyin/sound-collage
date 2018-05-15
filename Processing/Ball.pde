@@ -7,6 +7,7 @@ class Ball {
     y = _y;
     w = _w;
     h = _h;
+    xspeed = _xspeed;
     yspeed = _yspeed;
     lifespan = _lifespan;
     tx = random(1000);

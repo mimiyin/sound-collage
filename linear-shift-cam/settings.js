@@ -44,21 +44,21 @@ const WHINEVOL = 0.005;
 
 const FR = 60;
 const IPCAM_FPS = 25;
-const MSPF = 1000/IPCAM_FPS;
+const MSPF = 1000 / IPCAM_FPS;
 const PLAYTIME = 3 * 60 * 1000; // 4 minutes
 const PLAYTIME_IN_SECONDS = PLAYTIME / 1000;
 const WHINETIME = 4 * 60 * 1000; // 5 minutes
 
 // Where to start?
 let CUES = {
-  "WAIT" : 0,
-  "ENTER" : 1,
-  "STARTBG" : 2,
-  "STOPBG" : 3,
-  "STOPWHINE" : 4,
-  "STARTDARK" : 5,
-  "STOPDARK" : 6,
-  "RETURN" : 7
+  "WAIT": 0,
+  "ENTER": 1,
+  "STARTBG": 2,
+  "STOPBG": 3,
+  "STOPWHINE": 4,
+  "STARTDARK": 5,
+  "STOPDARK": 6,
+  "RETURN": 7
 }
 
 let cue = CUES.WAIT;
@@ -67,16 +67,17 @@ let start = false;
 // Keeping track of time elapsed
 let timer;
 let ACTS = {
-  "ENTER" : 0,
-  "LIGHT" : 1,
-  "DARK" : 2,
-  "END" : 3,
-  "RETURN" : 4
+  "WAIT": 0,
+  "ENTER": 1,
+  "LIGHT": 2,
+  "DARK": 3,
+  "END": 4,
+  "RETURN": 5
 }
 let act = ACTS.ENTER;
 let lastCue = 0;
 let timers = [];
-for(let a in ACTS) {
+for (let a in ACTS) {
   timers.push(0);
 }
 
@@ -95,10 +96,10 @@ const CAM_TH = 10; //50; // Sensitivity of camera
 
 // Whether or not we're setting camera area
 let select = false;
-let cx = 280;
+let cx = 0; //280;
 let cy = 0;
-let cw = CW-(cx*2);
+let cw = CW - (cx * 2);
 let ch = CH;
 
-let m_th_mult = 0.1;
-let m_th = cw*ch*m_th_mult;
+let m_th_mult = 0.001;
+let m_th = cw * ch * m_th_mult;

@@ -25,7 +25,7 @@ class Note {
     this._rh += step;
   }
   // Update the position and height of note
-  update(y) {
+  updateY(y) {
     this.y = y;
     this.rh = this._rh;
     this.h = this.rh * mult;
@@ -35,6 +35,9 @@ class Note {
     this.x = (this.o - xshift) * ow;
   }
 
+  update() {
+    this.note.amp(NMULT * this.counter / mult, 0.05);
+  }
   show() {
     stroke(0, 0, 100, 50);
     fill(100, this.counter, this.counter);
@@ -43,12 +46,12 @@ class Note {
 
   play() {
     this.counter++;
-    this.note.amp(NMULT * this.counter / mult, 0.05);
+    update();
   }
 
   pause() {
     if (this.counter > 0) this.counter--;
-    this.note.amp(NMULT * this.counter / mult, 0.05);
+    update();
   }
 
   contains(loc) {

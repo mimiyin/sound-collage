@@ -9,11 +9,11 @@ float mult = 1;
 final int TOTAL_OCTAVES = 5;
 int numNotes;
 final float BASE = 110;
-final float RANGE_RATE = 0.001; // Rate of range change
+final float RANGE_RATE = 0.002; // Rate of range change
 float numOctaves = 3;
 float xshift_mult = 0;
 float ow = 100;
-final float MOD_RATE = 0.00001; // Rate of modulation
+final float MOD_RATE = 0.00002; // Rate of modulation
 final float NMULT = 0.1; // Modifier on note volume
 
 Note[][] keyboard;
@@ -33,7 +33,7 @@ final float BGMID = 5;
 final float BGEND = 0.1;
 final float WHINEVOL = 0.005;
 
-final int FR = 60;
+// Time background sound for Light Act
 final int PLAYTIME = 5 * 60; // 5 minutes, 300 seconds
 final int WHINETIME = 30; // 30 seconds
 
@@ -52,16 +52,13 @@ int [] timers = new int [ACTS.LENGTH];
 
 // Get data from camera
 IPCapture ipcam;
-final int CAM = 1; //1; // Camera number
+final int CAM = 2; //1; // Camera number
 final int CW = 1280; //720; //1280;
-final int CH = 1280; //720; //360;
-final int CAM_SCALE = 1; //40; // Sensitivity of camera
-final int CAM_TH = 5; //50; // Sensitivity of camera
-
+final int CH = 480; //720; //360;
 final String IPCAM_ADDRESS = "http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=" + CW + "x" + CH + "&camera=" + CAM;
 
 // Whether or not we're setting camera area
-final boolean DEBUG = true;
+final boolean DEBUG = false;
 int cx = 0; //280;
 int cy = 0;
 int cw = CW; //-(cx*2);
@@ -71,8 +68,15 @@ int ch = CH;
 float[] old = new float[CW*CH];
 float movement = 0;
 
+// Sensitivity of camera
 float m_th_mult = 0.001;
 float m_th = 1 * m_th_mult;
+
+// Sensitivity of camera
+final int CAM_SCALE = 1; //40;
+final int CAM_TH = 5; //50; 
+final float MAX_NOTE_LENGTH = 10; // In seconds
+final float CAM_TO_MOUSE_RATIO = 0.25; // Relative to mouse movement
 
 
 void setup() {
