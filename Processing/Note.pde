@@ -70,11 +70,10 @@ class Note {
     for (int p = 0; p < players.size(); p++) {
       Ball player = players.get(p);
       if (contains(player)) {
-        //console.log(freq, p, counter);
         play();
         isPlaying = true;
       }
     }
-    if (!isPlaying) pause();
+    if (!isPlaying && counter > 0) pause();
   }
 }

@@ -43,7 +43,7 @@ void updateRelativeNotes(int t, Note tn) {
       Note note = keyboard[o][n];
       // Calculate the relative note
       int rn = n >= t ? n - t : (n + (numNotes - 1)) - t;
-      float h = ( areas.getFloat(rn) - note.h);
+      //float h = ( areas.getFloat(rn) - note.h);
       note.modulate( areas.getFloat(rn), tn.counter * MOD_RATE);
     }
   }

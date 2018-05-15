@@ -1,6 +1,7 @@
 import ipcapture.*;
 import processing.sound.*;
 import java.awt.event.*;
+import java.lang.reflect.*;
 
 JSONObject scales;
 JSONArray scale, ratios, areas;
@@ -15,7 +16,7 @@ float ow = 100;
 final float MOD_RATE = 0.00001; // Rate of modulation
 final float NMULT = 0.1; // Modifier on note volume
 
-Note[][] keyboard = new Note[TOTAL_OCTAVES][12];
+Note[][] keyboard;
 ArrayList<Ball> balls = new ArrayList<Ball>();
 
 // For mouse control
@@ -26,7 +27,7 @@ SoundFile bgsound;
 SinOsc whine;
 
 // Volumes of sound
-final float FADE_RESOLUTION = 0.01;
+final float FADE_RESOLUTION = 0.001;
 final float BGBEG = 0.5;
 final float BGMID = 5;
 final float BGEND = 0.1;
@@ -51,26 +52,26 @@ int [] timers = new int [ACTS.LENGTH];
 
 // Get data from camera
 IPCapture ipcam;
-final int CAM = 2; //1; // Camera number
+final int CAM = 1; //1; // Camera number
 final int CW = 1280; //720; //1280;
-final int CH = 480; //720; //360;
+final int CH = 1280; //720; //360;
 final int CAM_SCALE = 1; //40; // Sensitivity of camera
 final int CAM_TH = 5; //50; // Sensitivity of camera
 
 final String IPCAM_ADDRESS = "http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=" + CW + "x" + CH + "&camera=" + CAM;
 
 // Whether or not we're setting camera area
-const boolean DEBUG = false;
-int cx = 280;
+final boolean DEBUG = true;
+int cx = 0; //280;
 int cy = 0;
-int cw = CW-(cx*2);
+int cw = CW; //-(cx*2);
 int ch = CH;
 
 // Store data for movement comparison
 float[] old = new float[CW*CH];
 float movement = 0;
 
-float m_th_mult = 0.1;
+float m_th_mult = 0.001;
 float m_th = 1 * m_th_mult;
 
 
@@ -85,6 +86,9 @@ void setup() {
   numNotes = scale.size();
   areas = scales.getJSONArray("areas");
   ratios = scales.getJSONArray("ratios");
+
+  // Create keyboard
+  keyboard = new Note[TOTAL_OCTAVES][numNotes];
 
   // Calculate diag of screen to normalize mouse speed
   diag = sqrt(sq(width) + sq(height));
@@ -105,10 +109,15 @@ void setup() {
   // Load sound
   bgsound = new SoundFile(this, "bgsound-short.mp3");
   bgsound.amp(0);
+
+  // Seed old position
+  for (int i = 0; i < old.length; i++) {
+    old[i] = -1;
+  }
 }
 
 void draw() { 
-  if(!DEBUG) background(0);
+  if (!DEBUG) background(0);
 
   if (act == ACTS.DARK && ipcam != null && ipcam.isAvailable()) {
     ipcam.read();
@@ -157,6 +166,12 @@ void draw() {
   }
 
   // Cue Status
+  if (DEBUG) {
+    noFill();
+    stroke(100, 100, 100);
+    strokeWeight(2);
+    rect(cx, cy, cw, ch);
+  }
   String actTitle = actTitles[act];
   noStroke();
   fill(100);
@@ -195,19 +210,19 @@ void keyPressed() {
 }
 
 // Set area to analyze
-void mousePressed() {
-  if (!DEBUG) return;
-  cx = mouseX;
-  cy = mouseY;
-  cx = constrain(cx, 0, CW);
-  cy = constrain(cy, 0, CH);
-}
+//void mousePressed() {
+//  if (!DEBUG) return;
+//  cx = mouseX;
+//  cy = mouseY;
+//  cx = constrain(cx, 0, CW);
+//  cy = constrain(cy, 0, CH);
+//}
 
-void mouseReleased() {
-  if (!DEBUG) return;
-  cw = mouseX - cx;
-  ch = mouseY - cy;
-  cw = constrain(cw, 0, CW);
-  ch = constrain(ch, 0, CH);
-  println("Camera Analysis Area: " + cx, cy, cw, ch);
-}
+//void mouseReleased() {
+//  if (!DEBUG) return;
+//  cw = mouseX - cx;
+//  ch = mouseY - cy;
+//  cw = constrain(cw, 0, CW);
+//  ch = constrain(ch, 0, CH);
+//  println("Camera Analysis Area: " + cx, cy, cw, ch);
+//}

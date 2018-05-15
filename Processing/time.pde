@@ -2,7 +2,7 @@ void time() {
 
   // Update current timer
   timers[act] = millis() - lastCue;
-  
+
   timer = "";
   int totalTime = 0;
   for (int i = 0; i < ACTS.LENGTH; i++) {
@@ -10,7 +10,7 @@ void time() {
     timer += actTitles[i] + ":" + msToMMSS(timers[i]) + " ";
   }
   timer += "TOTAL:" + msToMMSS(totalTime);
-  
+
   // Start up cafe sound again for the end
   if (cue == CUES.RETURN) {
     println("RETURN!");
@@ -29,9 +29,6 @@ void time() {
       }
     }
     );
-    //setTimeout(function() {
-    //  bgsound.setVolume(BGEND, 10);
-    //}, 1000)
     cue = CUES.WAIT;
   }
   // Let sound die out
@@ -59,7 +56,7 @@ void time() {
   }
   // Stop the whine and then proceed to part 2
   else if (cue == CUES.STOPWHINE) {
-    println("STOP whine!");
+    println("STOP WHINE!");
     // Stop the whine if it's there
     if (whine != null) {
       whine.amp(0);
@@ -74,10 +71,6 @@ void time() {
       }
     }
     );
-    //setTimeout(function() {
-    //  cue = cues.get("STARTDARK");
-    //}
-    //, 5000);
   }
   // Stop cafe noise at the end of part 1
   else if (cue == CUES.STOPBG) {
@@ -93,10 +86,6 @@ void time() {
       }
     }
     );
-    //setTimeout(function() {
-    //  cue = cues.get("STOPwhine");
-    //}
-    //, WHINETIME - PLAYTIME);
   }
   // Begin installation
   else if (cue == CUES.STARTBG) {
@@ -104,9 +93,9 @@ void time() {
     // Log time
     act = ACTS.LIGHT;
     lastCue = millis();
-
+    
     // Ramp up bgsound to mid-volume
-    fadeVolume(bgsound, 0, BGMID, PLAYTIME);
+    fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
     // Set up whine
     whine = new SinOsc(this);
@@ -115,16 +104,13 @@ void time() {
     whine.play();
     // Fade in Whine after a second
     // Wait 1 second, Fade it in over 10 seconds
-    setTimer(1, new Runnable() {
+    setTimer(PLAYTIME-WHINETIME, new Runnable() {
       @Override
         public void run() {
-        fadeVolume(whine, 0, WHINEVOL, PLAYTIME);
+        fadeVolume(whine, 0, WHINEVOL, WHINETIME);
       }
     }
     );
-    //setTimeout(function() {
-    //  whine.amp(whineVOL, PLAYTIME_IN_SECONDS);
-    //}, 1000);
 
     // Automatically proceed to next cue
     cue = CUES.WAIT;
@@ -135,13 +121,14 @@ void time() {
       }
     }
     );
-    //  setTimeout(function() {
-    //    cue = cues.get("STOPBG");
-    //  }, PLAYTIME);
   }
   // Play bgsound when people enter
   else if (cue == CUES.ENTER) {
     println("ENTER!");
+    // Log time
+    act = ACTS.ENTER;
+    lastCue = millis();
+    
     bgsound.loop();
     bgsound.amp(BGBEG);
     cue = CUES.WAIT;
