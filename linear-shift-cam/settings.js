@@ -87,19 +87,24 @@ let ipcam;
 const CAM = 2; //1; // Camera number
 const CW = 1280; //720; //1280;
 const CH = 480; //720; //360;
+const IPCAM_ADDRESS = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=' + CAM;
 
 let old = [];
 let movement = 0;
 let ramp = 0;
-const CAM_SCALE = 1; //40; // Sensitivity of camera
-const CAM_TH = 10; //50; // Sensitivity of camera
 
 // Whether or not we're setting camera area
-let select = false;
+let select = true;
 let cx = 0; //280;
 let cy = 0;
 let cw = CW - (cx * 2);
 let ch = CH;
 
 let m_th_mult = 0.001;
-let m_th = cw * ch * m_th_mult;
+let m_th = 1 * m_th_mult;
+
+// Sensitivity of camera
+const CAM_SCALE = 1; //40;
+const CAM_TH = 8; //50;
+const MAX_NOTE_LENGTH = 10;
+const CAM_TO_MOUSE_RATIO = 0.25;

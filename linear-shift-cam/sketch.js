@@ -110,7 +110,7 @@ function draw() {
   // Print out which cue we're on
   noStroke();
   fill(0);
-  rect(0, height - 100, width, 100);
+  rect(0, height - 50, width, 100);
   fill(255);
 
   // Cue Status
@@ -172,12 +172,13 @@ function updateRange() {
 }
 
 function addBalls(num) {
-  num = constrain(num, 0, 1);
+  num = constrain(num, 0, 10);
+  console.log("ADD BALLS: " + num);
   if (RECORD) recordJSON.data.push({
     m: millis(),
     num: num
   });
-  balls.push(new Ball(random(width), random(height), 20, 20, 0, random(-1, 1), 60 * 1000 * num));
+  balls.push(new Ball(random(width), random(height), 20, 20, random(-1, 1), random(-1, 1), MAX_NOTE_LENGTH * frameRate() * num));
 }
 
 function mouseMoved() {
@@ -196,22 +197,21 @@ function processCamera() {
   for (let x = cx; x < cw; x += CAM_SCALE) {
     for (let y =cy; y < ch; y += CAM_SCALE) {
       let pos = (x + y * width) * 4;
-      let r = pixels[pos];
-      if (old[pos] && (abs(old[pos] - r) > CAM_TH)) {
+      let b = pixels[pos];
+      if ((abs(old[pos] - b) > CAM_TH)) {
         movement++;
       }
-      old[pos] = r;
+      old[pos] = b;
     }
   }
 
-  movement /= cw*ch;
+  movement /= (cw*ch*4);
 
-  console.log("m: " + nfs(movement, 0, 3) + "\tm_th: " + nfs(m_th, 0, 3));
+  console.log("m: " + nfs(movement, 0, 3) + " m_th: " + nfs(m_th, 0, 3));
 
   // When movement reaches a threshold
   if (movement > m_th) {
-    console.log("ADD BALLS");
-    addBalls(movement);
+    addBalls(CAM_TO_MOUSE_RATIO*movement/m_th);
     movement = 0;
   }
 }
@@ -275,7 +275,6 @@ function time() {
         if (rp >= rpdata.length - 1) part = 3;
       }
     } else if (!ipcam) {
-      return;
       // Set up video
       ipcam = new Image();
       ipcam.onload = function() {
@@ -294,7 +293,7 @@ function time() {
           }
         }, 34);
       }
-      ipcam.src = 'http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=' + CW + 'x' + CH + '&camera=' + CAM;
+      ipcam.src = IPCAM_ADDRESS;
     }
     cue = CUES.WAIT;
   }
@@ -356,47 +355,20 @@ function time() {
 
 // Press a key to save the data
 function keyPressed() {
-  switch (key) {
-    case 's':
-      saveJSON(recordJSON, "record.json");
-      break;
-    case '0':
-      cue = 0;
-      break;
-    case '1':
-      cue = 1;
-      break;
-    case '2':
-      cue = 2;
-      break;
-    case '3':
-      cue = 3;
-      break;
-    case '4':
-      cue = 4;
-      break;
-    case '5':
-      cue = 5;
-      break;
-    case '6':
-      cue = 6;
-      break;
-    case '7':
-      cue = 7;
-      break;
-  }
+  if(key == 's') saveJSON(recordJSON, "record.json");
+  if(parseInt(key)) cue = key;
 
   // Change motion threshold for creating notes
   switch (keyCode) {
     case UP_ARROW:
-      m_th += cw * ch * m_th_mult;
+      m_th += m_th_mult;
       break;
     case DOWN_ARROW:
       m_th -= cw * ch * m_th_mult;
       break;
   }
   // Make it possible to not be able to create new notes
-  m_th = constrain(m_th, cw * ch * m_th_mult, cw * ch * 1.1);
+  m_th = constrain(m_th, 0, 1.1);
 }
 
 // Set area to analyze

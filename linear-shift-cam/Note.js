@@ -38,6 +38,7 @@ class Note {
   update() {
     this.note.amp(NMULT * this.counter / mult, 0.05);
   }
+
   show() {
     stroke(0, 0, 100, 50);
     fill(100, this.counter, this.counter);
@@ -46,12 +47,12 @@ class Note {
 
   play() {
     this.counter++;
-    update();
+    this.update();
   }
 
   pause() {
     if (this.counter > 0) this.counter--;
-    update();
+    this.update();
   }
 
   contains(loc) {

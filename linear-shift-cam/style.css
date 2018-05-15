@@ -6,7 +6,7 @@ html, body {
 
 #timer {
   position: fixed;
-  bottom: 50px;
+  bottom: 20px;
   right: 100px;
   font-family: sans-serif;
   font-size: 18px;
