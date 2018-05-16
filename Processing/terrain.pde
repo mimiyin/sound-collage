@@ -2,7 +2,7 @@ void reset() {
   ow = width / numOctaves;
   if (numOctaves <= 2) {
     xshift_mult = -2;
-  } else if (numOctaves <= 4) {
+  } else if (numOctaves <= 5) {
     xshift_mult = -1;
   } else {
     xshift_mult = 0;

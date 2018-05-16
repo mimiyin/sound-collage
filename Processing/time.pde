@@ -47,10 +47,14 @@ void time() {
     act = ACTS.DARK;
     lastCue = millis();
 
-    if (ipcam == null) {
+    if (useIP && ipcam == null) {
       // Set up video
       ipcam = new IPCapture(this, IPCAM_ADDRESS, "", "");
       ipcam.start();
+    } else if (!useIP && webcam == null) {
+      // Set up video
+      webcam = new Capture(this, CW, CH);
+      webcam.start();
     }
     cue = CUES.WAIT;
   }
@@ -93,7 +97,7 @@ void time() {
     // Log time
     act = ACTS.LIGHT;
     lastCue = millis();
-    
+
     // Ramp up bgsound to mid-volume
     fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
@@ -128,7 +132,7 @@ void time() {
     // Log time
     act = ACTS.ENTER;
     lastCue = millis();
-    
+
     bgsound.loop();
     bgsound.amp(BGBEG);
     cue = CUES.WAIT;

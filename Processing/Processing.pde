@@ -1,4 +1,5 @@
 import ipcapture.*;
+import processing.video.*;
 import processing.sound.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
@@ -6,9 +7,9 @@ import java.lang.reflect.*;
 JSONObject scales;
 JSONArray scale, ratios, areas;
 float mult = 1;
-final int TOTAL_OCTAVES = 5;
+final int TOTAL_OCTAVES = 6;
 int numNotes;
-final float BASE = 110;
+final float BASE = 55;
 final float RANGE_RATE = 0.002; // Rate of range change
 float numOctaves = 3;
 float xshift_mult = 0;
@@ -51,7 +52,9 @@ String [] actTitles = {"WAIT", "ENTER", "LIGHT", "DARK", "END", "RETURN"};
 int [] timers = new int [ACTS.LENGTH];
 
 // Get data from camera
+boolean useIP = false;
 IPCapture ipcam;
+Capture webcam;
 final int CAM = 2; //1; // Camera number
 final int CW = 1280; //720; //1280;
 final int CH = 480; //720; //360;
@@ -71,12 +74,13 @@ float movement = 0;
 // Sensitivity of camera
 float m_th_mult = 0.001;
 float m_th = 1 * m_th_mult;
+float mspeed = 1;
 
 // Sensitivity of camera
 final int CAM_SCALE = 1; //40;
-final int CAM_TH = 5; //50; 
+final int CAM_TH = 10; //50; 
 final float MAX_NOTE_LENGTH = 10; // In seconds
-final float CAM_TO_MOUSE_RATIO = 0.25; // Relative to mouse movement
+float cam_mouse = 0.1; // Relative to mouse movement
 
 
 void setup() {
@@ -122,11 +126,18 @@ void setup() {
 
 void draw() { 
   if (!DEBUG) background(0);
-
-  if (act == ACTS.DARK && ipcam != null && ipcam.isAvailable()) {
-    ipcam.read();
-    if (DEBUG) image(ipcam, 0, 0);
-    processCamera(ipcam);
+  
+  if (act == ACTS.DARK) {
+    if (ipcam != null && ipcam.isAvailable()) {
+      ipcam.read();
+      if (DEBUG) image(ipcam, 0, 0);
+      processCamera(ipcam);
+    }
+    else if (webcam != null && webcam.available()) {
+      webcam.read();
+      if (DEBUG) image(webcam, 0, 0);
+      processCamera(webcam);
+    }
   }
 
   time();
@@ -208,9 +219,18 @@ void keyPressed() {
   case DOWN:
     m_th -= m_th_mult;
     break;
+  case RIGHT:
+    cam_mouse += 0.01;
+    break;
+  case LEFT:
+    cam_mouse -= 0.01;
+    break;
   }
   // Make it possible to not be able to create new notes
   m_th = constrain(m_th, 0, 1.1);
+  cam_mouse = constrain(cam_mouse, 0, 1);
+
+  println("m_th: " + nfs(m_th, 0, 3) + " cam_mouse: " + nfs(cam_mouse, 0, 3));
 }
 
 // Set area to analyze
