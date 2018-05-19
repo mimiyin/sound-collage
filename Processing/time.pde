@@ -48,6 +48,7 @@ void time() {
     lastCue = millis();
 
     if (useIP && ipcam == null) {
+      println("STARTING IPCAM");
       // Set up video
       ipcam = new IPCapture(this, IPCAM_ADDRESS, "", "");
       ipcam.start();
