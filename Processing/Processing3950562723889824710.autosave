@@ -56,16 +56,16 @@ boolean useIP = false;
 IPCapture ipcam;
 Capture webcam;
 final int CAM = 2; //1; // Camera number
-final int CW = 1920; //720; //1280;
-final int CH = 720; //720; //480;
+final int CW = 1280; //720; //1280;
+final int CH = 480; //720; //360;
 final String IPCAM_ADDRESS = "http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=" + CW + "x" + CH + "&camera=" + CAM;
 
 // Whether or not we're setting camera area
-final boolean DEBUG = true;
-int cx = 450; //400; //280;
-int cy = 0; //350;
-int cw = 1000; //500;
-int ch = CH; //550;
+final boolean DEBUG = false;
+int cx = 0; //280;
+int cy = 0;
+int cw = CW; //-(cx*2);
+int ch = CH;
 
 // Store data for movement comparison
 float[] old = new float[CW*CH];
@@ -74,19 +74,17 @@ float movement = 0;
 // Sensitivity of camera
 float m_th_mult = 0.001;
 float m_th = 1 * m_th_mult;
+float mspeed = 1;
 
 // Sensitivity of camera
 final int CAM_SCALE = 1; //40;
-final int CAM_TH = 2; //50; 
+final int CAM_TH = 10; //50; 
 final float MAX_NOTE_LENGTH = 10; // In seconds
-float cam_mouse = 0.25; // Relative to mouse movement
-
-// Record data
-JSONArray recording = new JSONArray();
+float cam_mouse = 0.1; // Relative to mouse movement
 
 
 void setup() {
-  size(1920, 720);
+  size(1280, 720);
   // Change color mode to HSB
   colorMode(HSB, 100);
 
@@ -196,7 +194,7 @@ void draw() {
   textAlign(RIGHT, CENTER);
   text(timer, width-20, height - 20);
   textAlign(LEFT, CENTER);
-  text("Act " + act + ": " + actTitle + " FPS: " + int(frameRate) +  " m: " + nfs(movement, 0, 3) + " m_th: " + nfs(m_th, 0, 3), 20, height - 20);
+  text("Act " + act + ": " + actTitle + " FPS: " + int(frameRate), 20, height - 20);
 }
 
 void mouseMoved() {
@@ -236,19 +234,19 @@ void keyPressed() {
 }
 
 // Set area to analyze
-void mousePressed() {
-  if (!DEBUG) return;
-  cx = mouseX;
-  cy = mouseY;
-  cx = constrain(cx, 0, CW);
-  cy = constrain(cy, 0, CH);
-}
+//void mousePressed() {
+//  if (!DEBUG) return;
+//  cx = mouseX;
+//  cy = mouseY;
+//  cx = constrain(cx, 0, CW);
+//  cy = constrain(cy, 0, CH);
+//}
 
-void mouseReleased() {
-  if (!DEBUG) return;
-  cw = mouseX - cx;
-  ch = mouseY - cy;
-  cw = constrain(cw, 0, CW);
-  ch = constrain(ch, 0, CH);
-  println("Camera Analysis Area: " + cx, cy, cw, ch);
-}
+//void mouseReleased() {
+//  if (!DEBUG) return;
+//  cw = mouseX - cx;
+//  ch = mouseY - cy;
+//  cw = constrain(cw, 0, CW);
+//  ch = constrain(ch, 0, CH);
+//  println("Camera Analysis Area: " + cx, cy, cw, ch);
+//}

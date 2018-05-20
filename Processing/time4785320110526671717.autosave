@@ -34,16 +34,6 @@ void time() {
   // Let sound die out
   else if (cue == CUES.STOPDARK) {
     println("STOP DARK!");
-    
-    // Save recording
-    int y = year();
-    int m = month();
-    int d = day();
-    int h = hour();
-    int s = second();
-    String ts = str(y)+str(m)+str(d)+str(h)+str(s);
-    saveJSONArray(recording, "data/recording_" + ts + ".json");
-    
     // Log time
     act = ACTS.END;
     lastCue = millis();
@@ -58,7 +48,6 @@ void time() {
     lastCue = millis();
 
     if (useIP && ipcam == null) {
-      println("STARTING IPCAM");
       // Set up video
       ipcam = new IPCapture(this, IPCAM_ADDRESS, "", "");
       ipcam.start();
