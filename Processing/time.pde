@@ -17,12 +17,16 @@ void time() {
     // Log time
     act = ACTS.RETURN;
     lastCue = millis();
-
+  
+    // Stop sand sound to cue Ryan
+    sand.stop();
+  
+    // Start up cafe sound again
     bgsound.loop();
     bgsound.amp(0);
 
     // Wait 1 second, Fade it in over 10 seconds
-    setTimer(1, new Runnable() {
+    setTimer(10, new Runnable() {
       @Override
         public void run() {
         fadeVolume(bgsound, 0, BGEND, 10);
@@ -34,6 +38,9 @@ void time() {
   // Let sound die out
   else if (cue == CUES.STOPDARK) {
     println("STOP DARK!");
+    
+    // Play sand sound to cue Ryan
+    sand.play();
     
     // Save recording
     int y = year();
@@ -79,13 +86,6 @@ void time() {
     }
     // Automatically proceed to next cue
     cue = CUES.WAIT;
-    setTimer(5, new Runnable() {
-      @Override
-        public void run() {
-        resetCue(CUES.STARTDARK);
-      }
-    }
-    );
   }
   // Stop cafe noise at the end of part 1
   else if (cue == CUES.STOPBG) {

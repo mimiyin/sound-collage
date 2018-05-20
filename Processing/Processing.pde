@@ -25,6 +25,7 @@ float speed;
 float diag;
 
 SoundFile bgsound;
+SoundFile sand;
 SinOsc whine;
 
 // Volumes of sound
@@ -32,6 +33,7 @@ final float FADE_RESOLUTION = 0.001;
 final float BGBEG = 0.5;
 final float BGMID = 5;
 final float BGEND = 0.1;
+final float SANDVOL = 1;
 final float WHINEVOL = 0.005;
 
 // Time background sound for Light Act
@@ -61,7 +63,7 @@ final int CH = 720; //720; //480;
 final String IPCAM_ADDRESS = "http://192.168.1.10/axis-cgi/mjpg/video.cgi?resolution=" + CW + "x" + CH + "&camera=" + CAM;
 
 // Whether or not we're setting camera area
-final boolean DEBUG = true;
+final boolean DEBUG = false;
 int cx = 450; //400; //280;
 int cy = 0; //350;
 int cw = 1000; //500;
@@ -119,6 +121,8 @@ void setup() {
   // Load sound
   bgsound = new SoundFile(this, "bgsound-short.mp3");
   bgsound.amp(0);
+  sand = new SoundFile(this, "sand.mp3");
+  sand.amp(SANDVOL);
 
   // Seed old position
   for (int i = 0; i < old.length; i++) {
