@@ -6,8 +6,9 @@ final class CUES {
   static final int STOPWHINE = 4;
   static final int STARTDARK = 5;
   static final int STOPDARK = 6;
-  static final int RETURN = 7; 
-  static final int LENGTH = 8;
+  static final int STARTSAND = 7;
+  static final int RETURN = 8; 
+  static final int LENGTH = 9;
 }
 
 final class ACTS {

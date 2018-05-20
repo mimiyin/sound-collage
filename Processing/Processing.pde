@@ -30,14 +30,14 @@ SinOsc whine;
 
 // Volumes of sound
 final float FADE_RESOLUTION = 0.001;
-final float BGBEG = 0.5;
+final float BGBEG = 0.05;
 final float BGMID = 5;
-final float BGEND = 0.1;
-final float SANDVOL = 1;
+final float BGEND = 0.01;
+final float SANDVOL = 0.75;
 final float WHINEVOL = 0.005;
 
 // Time background sound for Light Act
-final int PLAYTIME = 5 * 60; // 5 minutes, 300 seconds
+final int PLAYTIME = 1 * 60; // 5 minutes, 300 seconds
 final int WHINETIME = 30; // 30 seconds
 
 // Where to start?
@@ -54,7 +54,7 @@ String [] actTitles = {"WAIT", "ENTER", "LIGHT", "DARK", "END", "RETURN"};
 int [] timers = new int [ACTS.LENGTH];
 
 // Get data from camera
-boolean useIP = false;
+boolean useIP = true;
 IPCapture ipcam;
 Capture webcam;
 final int CAM = 2; //1; // Camera number
@@ -76,11 +76,12 @@ float movement = 0;
 // Sensitivity of camera
 float m_th_mult = 0.001;
 float m_th = 1 * m_th_mult;
+float m_th_inertia = 0.75;
 
 // Sensitivity of camera
 final int CAM_SCALE = 1; //40;
-final int CAM_TH = 2; //50; 
-final float MAX_NOTE_LENGTH = 10; // In seconds
+final int CAM_TH = 4; //50; 
+final int MAX_NOTE_LENGTH = 10; // In seconds
 float cam_mouse = 0.25; // Relative to mouse movement
 
 // Record data
@@ -122,7 +123,7 @@ void setup() {
   bgsound = new SoundFile(this, "bgsound-short.mp3");
   bgsound.amp(0);
   sand = new SoundFile(this, "sand.mp3");
-  sand.amp(SANDVOL);
+  sand.amp(0);
 
   // Seed old position
   for (int i = 0; i < old.length; i++) {
@@ -220,10 +221,10 @@ void keyPressed() {
   // Change motion threshold for creating notes
   switch (keyCode) {
   case UP:
-    m_th += m_th_mult;
+    m_th_inertia += 0.01;
     break;
   case DOWN:
-    m_th -= m_th_mult;
+    m_th_inertia -= 0.01;
     break;
   case RIGHT:
     cam_mouse += 0.01;
@@ -233,10 +234,10 @@ void keyPressed() {
     break;
   }
   // Make it possible to not be able to create new notes
-  m_th = constrain(m_th, 0, 1.1);
+  m_th_inertia = constrain(m_th_inertia, 0.1, 1);
   cam_mouse = constrain(cam_mouse, 0, 1);
 
-  println("m_th: " + nfs(m_th, 0, 3) + " cam_mouse: " + nfs(cam_mouse, 0, 3));
+  println("m_th_inertia: " + nfs(m_th_inertia, 0, 3) + " cam_mouse: " + nfs(cam_mouse, 0, 3));
 }
 
 // Set area to analyze

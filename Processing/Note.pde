@@ -38,19 +38,20 @@ class Note {
 
   void updateX() {
     x = (o + xshift_mult) * ow;
-}
+  }
 
   void show() {
     stroke(0, 0, 100, 50);
     fill(100, counter, counter);
     rect(x, y, ow, h);
   }
-  
+
   void update() {
     vol = (NMULT * counter) / mult;
     fadeVolume(note, pvol, vol, 0.05);
     pvol = vol;    
   }
+
   void play() {
     counter++;
     update();
@@ -74,6 +75,6 @@ class Note {
         isPlaying = true;
       }
     }
-    if (!isPlaying && counter > 0) pause();
+    if (!isPlaying) pause();
   }
 }

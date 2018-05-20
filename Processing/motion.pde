@@ -38,13 +38,19 @@ void processPixels(color[] cam) {
     movement = 0;
     
     // Make it harder to create notes by increasing the threshold
-    m_th += pow(m_th_mult, .5);
+    m_th += pow(m_th_mult, m_th_inertia);
+    m_th = constrain(m_th, m_th_mult, 1.1);
+    
+    println("M_TH_INERTIA: " + nfs(m_th_inertia, 0, 3) + " M_TH: " + nfs(m_th, 0, 3)); 
   }
 }
 
 void addBalls(float num) {
   // x, y, w, h, yspeed, lifespan (max is 1 minute)
-  balls.add(new Ball(random(width), random(height), 20, 20, random(-1, 1), random(-1, 1), int(MAX_NOTE_LENGTH*frameRate*num)));
+  int duration = int(MAX_NOTE_LENGTH*frameRate*num);
+  // Longest note is 1 minute
+  duration = constrain(duration, 0, int(MAX_NOTE_LENGTH*frameRate*6));
+  balls.add(new Ball(random(width), random(height), 20, 20, random(-1, 1), random(-1, 1), duration));
   
   // Create new add object
   JSONObject add = new JSONObject();
@@ -52,5 +58,5 @@ void addBalls(float num) {
   add.setFloat("num", num);
   recording.append(add);
   
-  println("ADD BALLS: " + nfs(num, 0, 3) + " DURATION: " + nfs(MAX_NOTE_LENGTH*frameRate*num, 0, 2) + " M_TH: " + nfs(m_th, 0, 3));
+  println("ADD BALLS: " + nfs(num, 0, 3) + " DURATION: " + duration + " M_TH: " + nfs(m_th, 0, 3));
 }

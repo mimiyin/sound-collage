@@ -17,31 +17,36 @@ void time() {
     // Log time
     act = ACTS.RETURN;
     lastCue = millis();
-  
+
     // Stop sand sound to cue Ryan
     sand.stop();
-  
+
     // Start up cafe sound again
-    bgsound.loop();
     bgsound.amp(0);
+    //bgsound.loop();
 
     // Wait 1 second, Fade it in over 10 seconds
     setTimer(10, new Runnable() {
       @Override
         public void run() {
+        bgsound.loop();
         fadeVolume(bgsound, 0, BGEND, 10);
       }
     }
     );
     cue = CUES.WAIT;
+  } else if (cue == CUES.STARTSAND) {
+    // Play sand sound to cue Ryan
+    sand.amp(SANDVOL);
+    sand.play();
+
+    // Wait for next cue
+    cue = CUES.WAIT;
   }
   // Let sound die out
   else if (cue == CUES.STOPDARK) {
     println("STOP DARK!");
-    
-    // Play sand sound to cue Ryan
-    sand.play();
-    
+
     // Save recording
     int y = year();
     int m = month();
@@ -50,7 +55,7 @@ void time() {
     int s = second();
     String ts = str(y)+str(m)+str(d)+str(h)+str(s);
     saveJSONArray(recording, "data/recording_" + ts + ".json");
-    
+
     // Log time
     act = ACTS.END;
     lastCue = millis();
@@ -90,14 +95,14 @@ void time() {
   // Stop cafe noise at the end of part 1
   else if (cue == CUES.STOPBG) {
     println("STOP BG!");
-    bgsound.stop();
+    bgsound.amp(0);
     cue = CUES.WAIT;
 
     // Automatically stop whine
     setTimer(WHINETIME, new Runnable() {
       @Override
         public void run() {
-        resetCue(CUES.STARTDARK);
+        resetCue(CUES.STOPWHINE);
       }
     }
     );
@@ -117,8 +122,7 @@ void time() {
     whine.freq(BASE * pow(2, 6));
     whine.amp(0);
     whine.play();
-    // Fade in Whine after a second
-    // Wait 1 second, Fade it in over 10 seconds
+    // Fade in Whine at the end of PLAYTIME
     setTimer(PLAYTIME-WHINETIME, new Runnable() {
       @Override
         public void run() {
