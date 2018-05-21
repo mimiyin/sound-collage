@@ -47,10 +47,12 @@ void processPixels(color[] cam) {
 
 void addBalls(float num) {
   // x, y, w, h, yspeed, lifespan (max is 1 minute)
-  int duration = int(MAX_NOTE_LENGTH*frameRate*num);
+  float duration = MAX_NOTE_LENGTH*frameRate*num;
+  // Choose a random duration using normal distribution
+  duration = (randomGaussian()*duration) + (duration/2);
   // Longest note is 1 minute
-  duration = constrain(duration, 0, int(MAX_NOTE_LENGTH*frameRate*6));
-  balls.add(new Ball(random(width), random(height), 20, 20, random(-1, 1), random(-1, 1), duration));
+  duration = constrain(duration, 0, 60*frameRate); 
+  balls.add(new Ball(random(width), random(height), 20, 20, random(-1, 1), random(-1, 1), int(duration)));
   
   // Create new add object
   JSONObject add = new JSONObject();
@@ -58,5 +60,5 @@ void addBalls(float num) {
   add.setFloat("num", num);
   recording.append(add);
   
-  println("ADD BALLS: " + nfs(num, 0, 3) + " DURATION: " + duration + " M_TH: " + nfs(m_th, 0, 3));
+  println("ADD BALLS: " + nfs(num, 0, 3) + " DURATION: " + duration);
 }

@@ -23,13 +23,12 @@ void time() {
 
     // Start up cafe sound again
     bgsound.amp(0);
-    //bgsound.loop();
+    bgsound.loop();
 
     // Wait 1 second, Fade it in over 10 seconds
     setTimer(10, new Runnable() {
       @Override
         public void run() {
-        bgsound.loop();
         fadeVolume(bgsound, 0, BGEND, 10);
       }
     }
@@ -96,6 +95,7 @@ void time() {
   else if (cue == CUES.STOPBG) {
     println("STOP BG!");
     bgsound.amp(0);
+    bgsound.stop();
     cue = CUES.WAIT;
 
     // Automatically stop whine

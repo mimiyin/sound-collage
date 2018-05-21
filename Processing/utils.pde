@@ -29,15 +29,16 @@ void setTimer(int t_in_seconds, final Runnable r) {
 
 // Fade volume soundfile
 void fadeVolume(final SoundFile s, final float startVolume, final float endVolume, float duration) {
-  int ms = int(duration*FADE_RESOLUTION*1000);
+  float change = abs(endVolume - startVolume);
+  int ms = int(duration*FADE_RESOLUTION*1000/change);
   final boolean fadeIn = endVolume > startVolume; 
   javax.swing.Timer t = new javax.swing.Timer(ms, new ActionListener() {
     double volume = startVolume;
     public void actionPerformed(ActionEvent e) {
       s.amp((float)volume);
       volume += FADE_RESOLUTION * (fadeIn ? 1 : -1);
-      if (fadeIn && volume > endVolume) stopTimer(e);
-      else if (!fadeIn && volume < endVolume) stopTimer(e);
+      if (fadeIn && volume >= endVolume) stopTimer(e);
+      else if (!fadeIn && volume <= endVolume) stopTimer(e);
     }
   }
   );
@@ -46,15 +47,16 @@ void fadeVolume(final SoundFile s, final float startVolume, final float endVolum
 
 // Fade volume oscillater
 void fadeVolume(final SinOsc o, final float startVolume, final float endVolume, float duration) {
-  int ms = int(duration*FADE_RESOLUTION*1000);
+  float change = abs(endVolume - startVolume);
+  int ms = int(duration*FADE_RESOLUTION*1000/change);
   final boolean fadeIn = endVolume > startVolume;    
   javax.swing.Timer t = new javax.swing.Timer(ms, new ActionListener() {
     double volume = startVolume;
     public void actionPerformed(ActionEvent e) {
       o.amp((float)volume);
       volume += FADE_RESOLUTION * (fadeIn ? 1 : -1);
-      if (fadeIn && volume > endVolume) stopTimer(e);
-      else if (!fadeIn && volume < endVolume) stopTimer(e);
+      if (fadeIn && volume >= endVolume) stopTimer(e);
+      else if (!fadeIn && volume <= endVolume) stopTimer(e);
     }
   }
   );

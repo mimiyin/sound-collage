@@ -32,12 +32,12 @@ SinOsc whine;
 final float FADE_RESOLUTION = 0.001;
 final float BGBEG = 0.05;
 final float BGMID = 5;
-final float BGEND = 0.01;
+final float BGEND = 0.025;
 final float SANDVOL = 0.75;
 final float WHINEVOL = 0.005;
 
 // Time background sound for Light Act
-final int PLAYTIME = 1 * 60; // 5 minutes, 300 seconds
+final int PLAYTIME = 10; //5 * 60; // 5 minutes, 300 seconds
 final int WHINETIME = 30; // 30 seconds
 
 // Where to start?
@@ -54,7 +54,7 @@ String [] actTitles = {"WAIT", "ENTER", "LIGHT", "DARK", "END", "RETURN"};
 int [] timers = new int [ACTS.LENGTH];
 
 // Get data from camera
-boolean useIP = true;
+boolean useIP = false;
 IPCapture ipcam;
 Capture webcam;
 final int CAM = 2; //1; // Camera number
@@ -80,8 +80,8 @@ float m_th_inertia = 0.75;
 
 // Sensitivity of camera
 final int CAM_SCALE = 1; //40;
-final int CAM_TH = 4; //50; 
-final int MAX_NOTE_LENGTH = 10; // In seconds
+final int CAM_TH = 20; //4; //50; 
+final float MAX_NOTE_LENGTH = 20; // In seconds
 float cam_mouse = 0.25; // Relative to mouse movement
 
 // Record data
@@ -133,14 +133,13 @@ void setup() {
 
 void draw() { 
   if (!DEBUG) background(0);
-  
+
   if (act == ACTS.DARK) {
     if (ipcam != null && ipcam.isAvailable()) {
       ipcam.read();
       if (DEBUG) image(ipcam, 0, 0);
       processCamera(ipcam);
-    }
-    else if (webcam != null && webcam.available()) {
+    } else if (webcam != null && webcam.available()) {
       webcam.read();
       if (DEBUG) image(webcam, 0, 0);
       processCamera(webcam);
@@ -215,10 +214,15 @@ void mouseMoved() {
 }
 
 void keyPressed() {
-  // Set cue with number keys
-  cue = Character.getNumericValue(key);
+  int n = Character.getNumericValue(key);
+  if (n >=1 && n <=8) {
+    // Set cue with number keys
+    cue = Character.getNumericValue(key);
+    return;
+  }
 
   // Change motion threshold for creating notes
+  // Change length of notes
   switch (keyCode) {
   case UP:
     m_th_inertia += 0.01;
@@ -233,7 +237,7 @@ void keyPressed() {
     cam_mouse -= 0.01;
     break;
   }
-  // Make it possible to not be able to create new notes
+  
   m_th_inertia = constrain(m_th_inertia, 0.1, 1);
   cam_mouse = constrain(cam_mouse, 0, 1);
 
