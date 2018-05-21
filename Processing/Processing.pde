@@ -54,7 +54,7 @@ String [] actTitles = {"WAIT", "ENTER", "LIGHT", "DARK", "END", "RETURN"};
 int [] timers = new int [ACTS.LENGTH];
 
 // Get data from camera
-boolean useIP = false;
+boolean useIP = true;
 IPCapture ipcam;
 Capture webcam;
 final int CAM = 2; //1; // Camera number
@@ -80,7 +80,7 @@ float m_th_inertia = 0.75;
 
 // Sensitivity of camera
 final int CAM_SCALE = 1; //40;
-final int CAM_TH = 20; //4; //50; 
+final int CAM_TH = 4; //50; 
 final float MAX_NOTE_LENGTH = 20; // In seconds
 float cam_mouse = 0.25; // Relative to mouse movement
 
