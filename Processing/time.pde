@@ -43,7 +43,7 @@ void time() {
     );
     cue = CUES.WAIT;
   } else if (cue == CUES.STARTSAND) {
-    
+
     // Play sand sound to cue Ryan
     sand.amp(SANDVOL);
     sand.loop();
@@ -105,7 +105,12 @@ void time() {
     println("STOP BG!");
     bgsound.amp(0);
     bgsound.stop();
-    cue = CUES.WAIT;
+
+    // Set up whine
+    whine = new SinOsc(this);
+    whine.freq(BASE * pow(2, 6));
+    whine.amp(WHINEVOL);
+    whine.play();
 
     // Automatically stop whine
     setTimer(WHINETIME, new Runnable() {
@@ -115,6 +120,8 @@ void time() {
       }
     }
     );
+
+    cue = CUES.WAIT;
   }
   // Begin installation
   else if (cue == CUES.STARTBG) {
@@ -127,18 +134,18 @@ void time() {
     fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
     // Set up whine
-    whine = new SinOsc(this);
-    whine.freq(BASE * pow(2, 6));
-    whine.amp(0);
-    whine.play();
-    // Fade in Whine at the end of PLAYTIME
-    setTimer(PLAYTIME-WHINETIME, new Runnable() {
-      @Override
-        public void run() {
-        fadeVolume(whine, 0, WHINEVOL, WHINETIME);
-      }
-    }
-    );
+    //whine = new SinOsc(this);
+    //whine.freq(BASE * pow(2, 6));
+    //whine.amp(0);
+    //whine.play();
+    //// Fade in Whine at the end of PLAYTIME
+    //setTimer(PLAYTIME-WHINETIME, new Runnable() {
+    //  @Override
+    //    public void run() {
+    //    fadeVolume(whine, 0, WHINEVOL, WHINETIME);
+    //  }
+    //}
+    //);
 
     // Automatically proceed to next cue
     cue = CUES.WAIT;
@@ -156,11 +163,11 @@ void time() {
     // Log time
     act = ACTS.ENTER;
     lastCue = millis();
-    
+
     // Start up BG sound
     bgsound.amp(BGBEG);
     bgsound.loop();
-    
+
     cue = CUES.WAIT;
   }
 }
