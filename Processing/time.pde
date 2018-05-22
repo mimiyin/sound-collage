@@ -106,12 +106,6 @@ void time() {
     bgsound.amp(0);
     bgsound.stop();
 
-    // Set up whine
-    whine = new SinOsc(this);
-    whine.freq(BASE * pow(2, 6));
-    whine.amp(WHINEVOL);
-    whine.play();
-
     // Automatically stop whine
     setTimer(WHINETIME, new Runnable() {
       @Override
@@ -134,18 +128,18 @@ void time() {
     fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
     // Set up whine
-    //whine = new SinOsc(this);
-    //whine.freq(BASE * pow(2, 6));
-    //whine.amp(0);
-    //whine.play();
-    //// Fade in Whine at the end of PLAYTIME
-    //setTimer(PLAYTIME-WHINETIME, new Runnable() {
-    //  @Override
-    //    public void run() {
-    //    fadeVolume(whine, 0, WHINEVOL, WHINETIME);
-    //  }
-    //}
-    //);
+    whine = new SinOsc(this);
+    whine.freq(BASE * pow(2, 6));
+    whine.amp(0);
+    whine.play();
+    // Fade in Whine at the end of PLAYTIME
+    setTimer(PLAYTIME-WHINETIME, new Runnable() {
+      @Override
+        public void run() {
+        fadeVolume(whine, 0, WHINEVOL, WHINETIME);
+      }
+    }
+    );
 
     // Automatically proceed to next cue
     cue = CUES.WAIT;
