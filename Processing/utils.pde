@@ -29,8 +29,9 @@ void setTimer(int t_in_seconds, final Runnable r) {
 
 // Fade volume soundfile
 void fadeVolume(final SoundFile s, final float startVolume, final float endVolume, float duration) {
-  float change = abs(endVolume - startVolume);
-  int ms = int(duration*FADE_RESOLUTION*1000/change);
+  float change = abs(endVolume - startVolume); // 2.9 units of volume
+  int ms = int(duration*FADE_RESOLUTION*1000/change); // 1805/2.9
+  println("MS: " + ms);
   final boolean fadeIn = endVolume > startVolume; 
   javax.swing.Timer t = new javax.swing.Timer(ms, new ActionListener() {
     double volume = startVolume;

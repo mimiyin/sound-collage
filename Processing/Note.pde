@@ -39,7 +39,11 @@ class Note {
   void updateX() {
     x = (o + xshift_mult) * ow;
   }
-
+  
+  void kill() {
+   note.stop(); 
+  }
+  
   void show() {
     stroke(0, 0, 100, 50);
     fill(100, counter, counter);

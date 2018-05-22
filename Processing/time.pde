@@ -18,6 +18,14 @@ void time() {
     act = ACTS.RETURN;
     lastCue = millis();
 
+    // KILL ALL NOTES
+    for (int o = 0; o < keyboard.length; o++) {
+      for (int n = 0; n < numNotes-1; n++) {
+        Note note = keyboard[o][n];
+        note.kill();
+      }
+    }
+
     // Stop sand sound to cue Ryan
     sand.stop();
 
@@ -115,6 +123,7 @@ void time() {
     lastCue = millis();
 
     // Ramp up bgsound to mid-volume
+    bgsound.loop();
     fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
     // Set up whine
@@ -147,9 +156,11 @@ void time() {
     // Log time
     act = ACTS.ENTER;
     lastCue = millis();
-
-    bgsound.loop();
+    
+    // Start up BG sound
     bgsound.amp(BGBEG);
+    bgsound.loop();
+    
     cue = CUES.WAIT;
   }
 }

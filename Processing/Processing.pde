@@ -30,14 +30,14 @@ SinOsc whine;
 
 // Volumes of sound
 final float FADE_RESOLUTION = 0.001;
-final float BGBEG = 0.05;
-final float BGMID = 5;
-final float BGEND = 0.025;
-final float SANDVOL = 0.75;
-final float WHINEVOL = 0.005;
+final float BGBEG = 0.1;
+final float BGMID = 3.0;
+final float BGEND = 0.05;
+final float SANDVOL = 2;
+final float WHINEVOL = 0.01;
 
 // Time background sound for Light Act
-final int PLAYTIME = 10; //5 * 60; // 5 minutes, 300 seconds
+final int PLAYTIME = 3 * 60; // 3 minutes, 180 seconds
 final int WHINETIME = 30; // 30 seconds
 
 // Where to start?
@@ -76,12 +76,12 @@ float movement = 0;
 // Sensitivity of camera
 float m_th_mult = 0.001;
 float m_th = 1 * m_th_mult;
-float m_th_inertia = 0.75;
+float m_th_inertia = 0.5;
 
 // Sensitivity of camera
 final int CAM_SCALE = 1; //40;
 final int CAM_TH = 4; //50; 
-final float MAX_NOTE_LENGTH = 20; // In seconds
+final float MAX_NOTE_LENGTH = 15; // In seconds
 float cam_mouse = 0.25; // Relative to mouse movement
 
 // Record data
