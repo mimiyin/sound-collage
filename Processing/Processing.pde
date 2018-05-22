@@ -28,6 +28,8 @@ SoundFile bgsound;
 SoundFile sand;
 SinOsc whine;
 
+boolean bgIsPlaying = false;
+
 // Volumes of sound
 final float FADE_RESOLUTION = 0.001;
 final float BGBEG = 0.1;
