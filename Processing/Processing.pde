@@ -216,7 +216,7 @@ void mouseMoved() {
 
 void keyPressed() {
   int n = Character.getNumericValue(key);
-  if (n >=1 && n <=8) {
+  if (n >=0 && n <=8) {
     // Set cue with number keys
     cue = Character.getNumericValue(key);
     return;
