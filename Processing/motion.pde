@@ -41,7 +41,7 @@ void processPixels(color[] cam) {
     m_th += pow(m_th_mult, m_th_inertia);
     m_th = constrain(m_th, m_th_mult, 1.1);
     
-    println("M_TH_INERTIA: " + nfs(m_th_inertia, 0, 3) + " M_TH: " + nfs(m_th, 0, 3)); 
+    println("m_th_inertia: " + nfs(m_th_inertia, 0, 3) + " m_th: " + nfs(m_th, 0, 3)); 
   }
 }
 
@@ -60,5 +60,8 @@ void addBalls(float num) {
   add.setFloat("num", num);
   recording.append(add);
   
-  println("ADD BALLS: " + nfs(num, 0, 3) + " DURATION: " + duration);
+  // Track longest note
+  if(duration > longestNote) longestNote = duration; 
+  
+  println("add: " + nfs(num, 0, 3) + " duration: " + nfs(duration/frameRate, 0, 3) + " longest: " + nfs(longestNote/frameRate, 0, 3));
 }

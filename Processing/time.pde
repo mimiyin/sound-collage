@@ -43,9 +43,10 @@ void time() {
     );
     cue = CUES.WAIT;
   } else if (cue == CUES.STARTSAND) {
+    
     // Play sand sound to cue Ryan
     sand.amp(SANDVOL);
-    sand.play();
+    sand.loop();
 
     // Wait for next cue
     cue = CUES.WAIT;
@@ -123,7 +124,6 @@ void time() {
     lastCue = millis();
 
     // Ramp up bgsound to mid-volume
-    bgsound.loop();
     fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
     // Set up whine
