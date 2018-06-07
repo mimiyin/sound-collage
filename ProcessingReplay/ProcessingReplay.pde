@@ -44,7 +44,7 @@ final int WHINETIME = 30; // 30 seconds
 
 // Where to start?
 boolean start = false;
-int cue = CUES.WAIT;
+int cue = CUES.STARTDARK;
 
 // Keeping track of time elapsed
 int act = ACTS.WAIT;
@@ -104,7 +104,7 @@ void setup() {
   
   // Load data to replay
   if(REPLAY) {
-    replay = loadJSONArray("recording_201852295.json");
+    replay = loadJSONArray("522/recording_20185221832.json");
     startTime = replay.getJSONObject(0).getInt("ts");
   }
 

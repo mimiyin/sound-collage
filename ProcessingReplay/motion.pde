@@ -8,8 +8,12 @@ void processCamera(IPCapture ipcam) {
 void processCamera(Capture webcam) {
   // Don't if replaying data
   if (REPLAY) {
+    if(r >= replay.size()) {
+      cue = CUES.STOPDARK;
+      return;
+    }
     JSONObject obj = replay.getJSONObject(r);
-      println(obj.getInt("ts") - startTime);
+    println(obj.getInt("ts") - startTime);
     if (millis() > obj.getInt("ts") - startTime) {
       float num = obj.getFloat("num");
       addBalls(num);

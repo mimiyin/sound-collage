@@ -31,7 +31,7 @@ void time() {
 
     // Start up cafe sound again
     bgsound.amp(0);
-    if(!bgIsPlaying) bgsound.loop();
+    if (!bgIsPlaying) bgsound.loop();
     bgIsPlaying = true;
 
     // Wait 1 second, Fade it in over 10 seconds
@@ -74,10 +74,11 @@ void time() {
   // REPLAY recorded data until the end
   else if (cue == CUES.STARTDARK) {
     println("START DARK!");
+
     // Log time
     act = ACTS.DARK;
     lastCue = millis();
-
+    if (REPLAY) frameRate(45);
     if (useIP && ipcam == null) {
       println("STARTING IPCAM");
       // Set up video
@@ -98,6 +99,16 @@ void time() {
       whine.amp(0);
       whine.stop();
     }
+
+    // Automatically stop whine
+    setTimer(3, new Runnable() {
+      @Override
+        public void run() {
+        resetCue(CUES.STARTDARK);
+      }
+    }
+    );
+
     // Automatically proceed to next cue
     cue = CUES.WAIT;
   }
@@ -127,6 +138,7 @@ void time() {
     lastCue = millis();
 
     // Ramp up bgsound to mid-volume
+    bgsound.loop();
     fadeVolume(bgsound, BGBEG, BGMID, PLAYTIME);
 
     // Set up whine
@@ -162,7 +174,7 @@ void time() {
 
     // Start up BG sound
     bgsound.amp(BGBEG);
-    if(!bgIsPlaying) bgsound.loop();
+    if (!bgIsPlaying) bgsound.loop();
     bgIsPlaying = true;
 
     cue = CUES.WAIT;
